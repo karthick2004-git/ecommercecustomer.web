@@ -8,8 +8,9 @@
     "react-router-dom": "^6.20.0"
   },
   "scripts": {
-    "build": "npx vite build",
-    "dev": "npx vite"
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.1",
