@@ -16,22 +16,13 @@ export function CartProvider({ children }) {
     }
   });
 
-  const [address, setAddress] = useState(() => {
-    try {
-      const a = JSON.parse(localStorage.getItem("checkout_address"));
-      return a || { name: "", phone: "", address: "", state: "", district: "", pincode: "" };
-    } catch {
-      return { name: "", phone: "", address: "", state: "", district: "", pincode: "" };
-    }
-  });
+  const [address, setAddress] = useState({ name: "", phone: "", address: "", state: "", district: "", pincode: "" });
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  useEffect(() => {
-    localStorage.setItem("checkout_address", JSON.stringify(address));
-  }, [address]);
+
 
   const addToCart = useCallback((product) => {
     setCart(prev => {

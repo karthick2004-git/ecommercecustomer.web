@@ -10,15 +10,16 @@ const collections = [
 export default function CollectionSection() {
   return (
     <section className="collection container">
-      <h2 className="section-title">OUR COLLECTION</h2>
+      <h2 className="section-title reveal">OUR COLLECTION</h2>
       <div className="collection-grid">
         {collections.map((c, i) => (
-          <CollectionCard
-            key={i}
-            label={c.label}
-            img={c.img}
-            onClick={() => window.location.hash = "#collection"}
-          />
+          <div key={i} className={`reveal stagger-${i + 1}`}>
+            <CollectionCard
+              label={c.label}
+              img={c.img}
+              onClick={() => window.location.hash = "#collection"}
+            />
+          </div>
         ))}
       </div>
     </section>

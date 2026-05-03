@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
+import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer";
 import CartBar from "../components/ui/CartBar";
 import ApiPage from "../api/ApiPage";
 
@@ -9,6 +11,7 @@ export default function ProductPage({ productId }) {
   const [loading, setLoading] = useState(true);
   const [mainImg, setMainImg] = useState(null);
   const [size, setSize] = useState("M");
+  const [addedToCart, setAddedToCart] = useState(false);
 
   const cartItem = cart.find(item => item.id === parseInt(productId));
   const qty = cartItem ? (cartItem.quantity || 1) : 0;
@@ -29,10 +32,36 @@ export default function ProductPage({ productId }) {
     loadProduct();
   }, [productId]);
 
-  if (loading) return <div className="product-container" style={{padding: "100px", textAlign: "center"}}>Loading product details...</div>;
-  if (!product) return <div className="product-container" style={{padding: "100px", textAlign: "center"}}>Product not found.</div>;
+  if (loading) return (
+    <>
+      <Navbar />
+      <div className="product-container" style={{padding: "100px 5%", textAlign: "center"}}>
+        <div className="skeleton" style={{width: 200, height: 24, margin: '0 auto 40px'}}></div>
+        <div style={{display: 'flex', gap: 40, justifyContent: 'center', flexWrap: 'wrap'}}>
+          <div className="skeleton" style={{width: 400, height: 450, borderRadius: 16}}></div>
+          <div style={{display: 'flex', flexDirection: 'column', gap: 16}}>
+            <div className="skeleton" style={{width: 300, height: 28}}></div>
+            <div className="skeleton" style={{width: 200, height: 20}}></div>
+            <div className="skeleton" style={{width: 150, height: 32}}></div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 
-  const imgs = [product.image_url, "https://images.unsplash.com/photo-1603252109303-2751441dd157?w=400"].filter(Boolean);
+  if (!product) return (
+    <>
+      <Navbar />
+      <div className="empty-state" style={{padding: "100px 20px"}}>
+        <div className="empty-icon">😔</div>
+        <h3>Product not found</h3>
+        <p>The product you're looking for doesn't exist or has been removed.</p>
+        <button className="browse-btn" onClick={() => window.location.hash = "#collection/new-arrivals"}>Browse Products</button>
+      </div>
+    </>
+  );
+
+  const imgs = [product.image_url].filter(Boolean);
   const currentImg = mainImg || imgs[0];
 
   const handleAddToCart = () => {
@@ -45,13 +74,30 @@ export default function ProductPage({ productId }) {
       category: product.category,
       discount: product.discount
     });
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
   };
+
+  const categoryLabel = {
+    "new-arrivals": "New Arrivals",
+    "shirts": "Shirts",
+    "t-shirts": "T-Shirts",
+  }[product.category] || "Collection";
 
   return (
     <>
-      <header className="navbar" style={{borderBottom:"1px solid #eee",background:"#fff"}}>
-        <div className="logo" style={{cursor:"pointer"}} onClick={() => window.location.hash = "#home"}><h2>COZY HOOD</h2></div>
-      </header>
+      <Navbar />
+
+      {/* Breadcrumb */}
+      <div className="breadcrumb">
+        <div className="container">
+          <a href="#home">Home</a>
+          <span className="breadcrumb-sep"><i className="fa-solid fa-chevron-right"></i></span>
+          <a href={`#collection/${product.category}`}>{categoryLabel}</a>
+          <span className="breadcrumb-sep"><i className="fa-solid fa-chevron-right"></i></span>
+          <span className="breadcrumb-current">{product.name}</span>
+        </div>
+      </div>
 
       <div className="product-container">
         <div className="gallery">
@@ -62,65 +108,93 @@ export default function ProductPage({ productId }) {
           </div>
           <div className="main-image">
             <img id="mainImage" src={currentImg} alt={product.name} />
+            {product.discount > 0 && <span className="product-badge-discount">{product.discount}% OFF</span>}
           </div>
         </div>
 
         <div className="product-info">
-          {product.discount > 0 && <span className="discount">{product.discount}% OFF</span>}
-          <h1><b>{product.name}</b></h1>
-          <div className="rating">★★★★☆ <span>(3)</span></div>
-          <div className="price-box">
-            {product.old_price && <span className="old">₹{product.old_price.toLocaleString()}</span>}
-            <span className="new">₹{product.price.toLocaleString()}</span>
+          <span className="product-category-label">{categoryLabel}</span>
+          <h1>{product.name}</h1>
+          <div className="rating">
+            <span className="stars">★★★★☆</span>
+            <span className="rating-count">(3 reviews)</span>
+          </div>
+          
+          <div className="price-section">
+            {product.old_price && <span className="old-price-detail">₹{product.old_price.toLocaleString()}</span>}
+            <span className="new-price-detail">₹{product.price.toLocaleString()}</span>
+            {product.discount > 0 && <span className="save-badge">Save {product.discount}%</span>}
           </div>
 
+          {product.description && (
+            <p className="product-description">{product.description}</p>
+          )}
+
           <div className="size-section">
-            <p>Size: <b>{size}</b></p>
+            <p className="section-label">Size: <strong>{size}</strong></p>
             <div className="sizes">
-              {["M","L","XL","XXL"].map(s => (
-                <button key={s} className={`size${size === s ? " active" : ""}`} onClick={() => setSize(s)}>{s}</button>
+              {(product.sizes || ["M","L","XL","XXL"]).map(s => (
+                <button key={s} className={`size-btn${size === s ? " active" : ""}`} onClick={() => setSize(s)}>{s}</button>
               ))}
             </div>
           </div>
 
-          <div className="cart-row">
+          <div className="cart-actions">
             {qty === 0 ? (
-              <>
-                <button className="cart-wide" onClick={handleAddToCart}>Add to Cart</button>
-              </>
+              <button className={`add-to-cart-btn ${addedToCart ? 'added' : ''}`} onClick={handleAddToCart}>
+                {addedToCart ? (
+                  <><i className="fa-solid fa-check"></i> Added to Cart</>
+                ) : (
+                  <><i className="fa-solid fa-bag-shopping"></i> Add to Cart</>
+                )}
+              </button>
             ) : (
               <>
-                <div className="quantity">
-                  <button onClick={() => updateQuantity(product.id, qty - 1)}>-</button>
-                  <span id="count">{qty}</span>
+                <div className="quantity-selector">
+                  <button onClick={() => updateQuantity(product.id, qty - 1)}>−</button>
+                  <span>{qty}</span>
                   <button onClick={() => updateQuantity(product.id, qty + 1)}>+</button>
                 </div>
-                <button className="cart-wide" onClick={() => window.location.hash = "#cart"}>Go to Cart</button>
+                <button className="go-to-cart-btn" onClick={() => window.location.hash = "#cart"}>
+                  <i className="fa-solid fa-bag-shopping"></i> Go to Cart
+                </button>
               </>
             )}
-          </div>
-
-          <div className="delivery">
-            <h4>🚚 Free Shipping</h4>
-            <p>✔ Delivery : Up to 2-4 business days</p>
-            <p>✔ Dispatch : Within 24 hrs</p>
-          </div>
-
-          <div className="secure-box">
-            <p>Guaranteed Safe And Secure Checkout</p>
-            <div className="payments">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg" alt="Razorpay" />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Google_Pay_Logo.svg" alt="Google Pay" />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Paytm_logo.png" alt="Paytm" />
-            </div>
-            <button className="buy-btn" id="payBtn" onClick={() => {
+            <button className="buy-now-btn" onClick={() => {
               if (qty === 0) handleAddToCart();
               window.location.hash = "#cart";
-            }}>BUY NOW</button>
+            }}>
+              Buy Now
+            </button>
+          </div>
+
+          <div className="delivery-info">
+            <div className="delivery-item">
+              <i className="fa-solid fa-truck-fast"></i>
+              <div>
+                <strong>Free Shipping</strong>
+                <span>On orders above ₹999</span>
+              </div>
+            </div>
+            <div className="delivery-item">
+              <i className="fa-solid fa-box-open"></i>
+              <div>
+                <strong>Delivery in 2-4 days</strong>
+                <span>Dispatched within 24 hrs</span>
+              </div>
+            </div>
+            <div className="delivery-item">
+              <i className="fa-solid fa-shield-halved"></i>
+              <div>
+                <strong>Secure Checkout</strong>
+                <span>100% safe payment</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      <Footer />
       <CartBar />
     </>
   );
