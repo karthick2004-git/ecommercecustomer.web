@@ -1,4 +1,4 @@
-const BASE_URL = 'https://ecommerceweb-backend-fsl5.vercel.app/api';
+const BASE_URL = 'http://localhost:3000/api';
 
 const ApiEndUrl = {
   admin: {
@@ -20,6 +20,7 @@ const ApiEndUrl = {
     productDetail: `${BASE_URL}/customer/products/detail`,
     order: `${BASE_URL}/customer/order`,
     orders: `${BASE_URL}/customer/orders`,
+    paymentSettings: `${BASE_URL}/customer/payment-settings`,
   }
 };
 

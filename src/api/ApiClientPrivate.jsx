@@ -5,7 +5,7 @@ const ApiClientPrivate = async (url, options = {}) => {
     method: 'GET',
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       'Authorization': `Bearer ${token}`,
       ...(options.headers || {}),
     },

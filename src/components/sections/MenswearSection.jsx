@@ -7,12 +7,16 @@ const menswearImages = [
 export default function MenswearSection() {
   return (
     <section className="menswear container">
-      <h2 className="section-title">NEW MENSWEAR ARRIVAL</h2>
+      <h2 className="section-title reveal">NEW MENSWEAR ARRIVAL</h2>
       <div className="menswear-box">
-        {menswearImages.map((src, i) => (
-          <div className="menswear-img" key={i}><img src={src} alt="menswear" /></div>
-        ))}
-        <div className="menswear-content">
+        <div className="menswear-images-grid">
+          {menswearImages.map((src, i) => (
+            <div className={`menswear-img reveal-scale stagger-${i + 1}`} key={i}>
+              <img src={src} alt="menswear" />
+            </div>
+          ))}
+        </div>
+        <div className="menswear-content reveal-right">
           <h3>Urban Street Hoodie</h3>
           <p>Premium menswear hoodie designed for modern street fashion. Soft cotton blend, relaxed fit, and ultra stylish look.</p>
           <h4>$249.00</h4>

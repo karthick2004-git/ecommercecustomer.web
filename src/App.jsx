@@ -1,8 +1,8 @@
+import { useEffect } from "react";
 import { CartProvider } from "./context/CartContext";
 import { useHash } from "./hooks/useHash";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
-import SocialFloat from "./components/layout/SocialFloat";
 import HomePage from "./pages/HomePage";
 import ShopPage from "./pages/ShopPage";
 import ProductPage from "./pages/ProductPage";
@@ -19,10 +19,10 @@ function AppRouter() {
   const hash = useHash();
 
   const renderPage = () => {
-    if (hash === "#home" || hash === "") return <><HomePage /><Footer /></>;
+    if (hash === "#home" || hash === "") return <><Navbar /><HomePage /><Footer /></>;
     if (hash === "#contact") return <><Navbar /><ContactPage /><Footer /></>;
     if (hash.startsWith("#collection/")) {
-      const category = hash.replace("#collection/", "");
+      const category = hash.replace("#collection/", "").split('?')[0];
       return <ShopPage category={category} />;
     }
     if (hash === "#collection") return <ShopPage category="new-arrivals" />;
@@ -38,24 +38,45 @@ function AppRouter() {
       return <OrderSuccessPage orderId={orderId} />;
     }
     if (hash === "#checkout") {
-      // Legacy redirect
       window.location.hash = "#cart";
       return null;
     }
     if (hash === "#orders") return <OrdersPage />;
     if (hash === "#login") return <AuthPage initialView="login" />;
     if (hash === "#signup") return <AuthPage initialView="signup" />;
-    return <><HomePage /><Footer /></>;
+    return <><Navbar /><HomePage /><Footer /></>;
   };
 
-  const showMainNav = hash === "#home" || hash === "#contact" || hash === "";
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    const observeElements = () => {
+      const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+      reveals.forEach(el => observer.observe(el));
+    };
+
+    observeElements();
+
+    // Watch for dynamic content changes
+    const mutationObserver = new MutationObserver(() => observeElements());
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      mutationObserver.disconnect();
+    };
+  }, [hash]);
 
   return (
     <>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-      {showMainNav && <Navbar />}
       {renderPage()}
-      {showMainNav && <SocialFloat />}
     </>
   );
 }

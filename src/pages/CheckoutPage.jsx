@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
+import ApiPage from "../api/ApiPage";
 
 const INDIAN_STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -18,6 +19,43 @@ export default function CheckoutPage() {
 
   const shipping = cartTotal > 999 ? 0 : 79;
   const grandTotal = cartTotal + shipping;
+
+  useEffect(() => {
+    const fetchLastAddress = async () => {
+      const token = localStorage.getItem("customer_token");
+      if (!token) return;
+
+      try {
+        const data = await ApiPage.fetchMyOrders();
+        if (data && data.orders && data.orders.length > 0) {
+          const lastOrder = data.orders[0];
+          setAddress({
+            name: lastOrder.customer_name || "",
+            phone: lastOrder.phone || "",
+            address: lastOrder.address || "",
+            state: lastOrder.state || "",
+            district: lastOrder.district || "",
+            pincode: lastOrder.pincode || ""
+          });
+        } else {
+          // If no orders, try to at least fill the name from user profile
+          const userStored = localStorage.getItem("customer_user");
+          if (userStored) {
+            const user = JSON.parse(userStored);
+            if (user && !address.name) {
+              setAddress(prev => ({ ...prev, name: user.name }));
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch previous address:", error);
+      }
+    };
+
+    if (!address.name) {
+      fetchLastAddress();
+    }
+  }, [address.name, setAddress]);
 
   const handleChange = (field, value) => {
     setAddress(prev => ({ ...prev, [field]: value }));

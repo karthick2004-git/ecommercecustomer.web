@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import ProductCard from "../components/ui/ProductCard";
 import CartBar from "../components/ui/CartBar";
+import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
 import ApiPage from "../api/ApiPage";
 
@@ -16,9 +17,16 @@ export default function ShopPage({ category }) {
     "new-arrivals": "New Arrivals",
     "shirts": "Shirts",
     "t-shirts": "T-Shirts",
+    "all": "All Products",
   }[category] || "Collection";
 
-  // Fetch products from API
+  const categoryDesc = {
+    "new-arrivals": "Discover the latest styles fresh off the runway",
+    "shirts": "Classic & modern shirts for every occasion",
+    "t-shirts": "Comfortable everyday essentials",
+    "all": "Browse our complete collection",
+  }[category] || "Explore our curated selection";
+
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
@@ -36,7 +44,6 @@ export default function ShopPage({ category }) {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Extract search from hash
   useEffect(() => {
     const hash = window.location.hash;
     const match = hash.match(/[?&]search=([^&]*)/);
@@ -45,19 +52,7 @@ export default function ShopPage({ category }) {
     } else {
       setSearchQuery("");
     }
-  }, [category]); // Re-run when category changes (which includes the whole hash)
-
-  const handleSearchChange = (e) => {
-    const val = e.target.value;
-    setSearchQuery(val);
-    // Update hash without losing category
-    const baseHash = window.location.hash.split('?')[0];
-    if (val.trim()) {
-      window.location.hash = `${baseHash}?search=${encodeURIComponent(val.trim())}`;
-    } else {
-      window.location.hash = baseHash;
-    }
-  };
+  }, [category]);
 
   const filteredProducts = productList.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -70,43 +65,74 @@ export default function ShopPage({ category }) {
     );
   };
 
+  const categories = [
+    { label: "New Arrivals", slug: "new-arrivals" },
+    { label: "Shirts", slug: "shirts" },
+    { label: "T-Shirts", slug: "t-shirts" },
+  ];
+
   return (
     <>
-      <header className="navbar" style={{background:"#111",color:"white"}}>
-        <div className="logo" style={{color:"white",cursor:"pointer"}} onClick={() => window.location.hash = "#home"}>COZY HOOD</div>
-        <nav className="nav-links" style={{display:"flex",gap:"25px"}}>
-          {["Home","New Arrivals","Shirts","T-Shirts"].map((label,i) => {
-            const hash = ["#home","#collection/new-arrivals","#collection/shirts","#collection/t-shirts"][i];
-            return <a key={i} href={hash} style={{color:"white",textDecoration:"none",fontSize:"14px"}}>{label}</a>;
-          })}
-          <a href="#orders" style={{color:"white",textDecoration:"none",fontSize:"14px"}}>My Orders</a>
-        </nav>
-        <div className="search-box">
-          <input 
-            type="text" 
-            placeholder="Search products..." 
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
-          <div className="wishlist-icon">❤️ <span>{wishlist.length}</span></div>
-          <div className="cart-icon" onClick={() => window.location.hash = "#cart"} style={{cursor:"pointer"}}>🛒 <span id="cart-count">{cart.length}</span></div>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="shop-container">
+        {/* Collection Header */}
+        <div className="collection-header">
+          <h1>{categoryLabel}</h1>
+          <p>{searchQuery ? `Search results for "${searchQuery}"` : categoryDesc}</p>
+          <div className="category-chips">
+            {categories.map(cat => (
+              <a 
+                key={cat.slug}
+                href={`#collection/${cat.slug}`}
+                className={`category-chip ${category === cat.slug ? "active" : ""}`}
+              >
+                {cat.label}
+              </a>
+            ))}
+          </div>
+        </div>
+
         <main className="products-area">
           <div className="top-bar">
-            <p>Showing 1–{filteredProducts.length} of {filteredProducts.length} results ({categoryLabel})</p>
-            <select id="selecte" value={sort} onChange={e => setSort(Number(e.target.value))}>
-              <option value={0}>Sort by popularity</option>
-              <option value={1}>Price: Low to High</option>
-              <option value={2}>Price: High to Low</option>
-            </select>
+            <div className="top-bar-search">
+              <i className="fa-solid fa-magnifying-glass"></i>
+              <input 
+                type="text" 
+                placeholder="Search products..." 
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button className="search-clear" onClick={() => setSearchQuery("")}>
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              )}
+            </div>
+            <div className="top-bar-right">
+              <p className="result-count">
+                <strong>{filteredProducts.length}</strong> {filteredProducts.length === 1 ? 'product' : 'products'}
+              </p>
+              <select id="selecte" value={sort} onChange={e => setSort(Number(e.target.value))}>
+                <option value={0}>Sort by popularity</option>
+                <option value={1}>Price: Low to High</option>
+                <option value={2}>Price: High to Low</option>
+              </select>
+            </div>
           </div>
 
-          <div className="product-grid">
+          <div className="product-grid stagger-children">
             {loading ? (
-              <p>Loading products...</p>
+              // Skeleton loading cards
+              Array.from({ length: 4 }).map((_, i) => (
+                <div className="skeleton-card" key={i}>
+                  <div className="skeleton skeleton-img"></div>
+                  <div className="skeleton-info">
+                    <div className="skeleton skeleton-title"></div>
+                    <div className="skeleton skeleton-price"></div>
+                  </div>
+                </div>
+              ))
             ) : filteredProducts.length > 0 ? (
               filteredProducts.map(p => (
                 <ProductCard
@@ -117,7 +143,14 @@ export default function ShopPage({ category }) {
                 />
               ))
             ) : (
-              <p>No products found {searchQuery ? `for "${searchQuery}"` : "in this category"}.</p>
+              <div className="empty-state">
+                <div className="empty-icon">🔍</div>
+                <h3>No products found</h3>
+                <p>{searchQuery ? `We couldn't find anything matching "${searchQuery}"` : "This category is empty for now"}</p>
+                <button className="browse-btn" onClick={() => window.location.hash = "#collection/new-arrivals"}>
+                  Browse All Products
+                </button>
+              </div>
             )}
           </div>
         </main>
