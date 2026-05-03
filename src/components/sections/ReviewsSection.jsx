@@ -13,7 +13,7 @@ export default function ReviewsSection() {
         <h2 className="section-title reveal">OUR HAPPY CUSTOMERS</h2>
         <div className="review-grid">
           {reviews.map((r, i) => (
-            <div key={i} className={`reveal-scale stagger-${i + 1}`}>
+            <div key={i} className={`reveal-scale stagger-${i + 1}`} style={{ height: "100%" }}>
               <ReviewCard text={r.text} author={r.author} stars={r.stars} highlight={r.highlight} />
             </div>
           ))}

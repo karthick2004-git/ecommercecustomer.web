@@ -21,7 +21,7 @@
 .reviews { background: #8b3f2b; color: white; padding: 80px 0; }
 .review-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 40px; }
 .review-grid p { color: black; }
-.review-card { background: white; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.08); transition: transform 0.4s, box-shadow 0.4s; }
+.review-card { background: white; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.08); transition: transform 0.4s, box-shadow 0.4s; height: 100%; display: flex; flex-direction: column; justify-content: center; }
 .review-card:hover { transform: translateY(-10px); }
 .stars { color: gold; margin-top: 10px; font-size: 18px; }
 .highlight { background: black; color: white; }
