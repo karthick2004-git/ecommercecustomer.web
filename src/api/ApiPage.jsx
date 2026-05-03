@@ -51,6 +51,13 @@ const ApiPage = {
     });
   },
 
+  placeOrderFormData: async (formData) => {
+    return await ApiClientPrivate(ApiEndUrl.customer.order, {
+      method: 'POST',
+      body: formData,
+    });
+  },
+
   fetchMyOrders: async () => {
     return await ApiClientPrivate(ApiEndUrl.customer.orders);
   },
@@ -60,6 +67,10 @@ const ApiPage = {
       method: 'PUT',
       body: JSON.stringify({ order_id: orderId }),
     });
+  },
+  
+  fetchPaymentSettings: async () => {
+    return await ApiClientPublic(ApiEndUrl.customer.paymentSettings);
   },
 };
 

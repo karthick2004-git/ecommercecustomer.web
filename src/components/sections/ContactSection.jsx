@@ -35,9 +35,9 @@ export default function ContactSection() {
   };
 
   return (
-    <section className="contact-location">
-      <div className="container contact-grid">
-        <div className="contact-form">
+    <section className="contact-location container">
+      <div className="contact-grid">
+        <div className="contact-form reveal-left">
           <h2>Customer Support</h2>
           <p>Contact us anytime for orders or support.</p>
           <form onSubmit={handleSubmit}>
@@ -57,7 +57,7 @@ export default function ContactSection() {
             <button type="submit">Send</button>
           </form>
         </div>
-        <div className="contact-map">
+        <div className="contact-map reveal-right">
           <h2>Our Location</h2>
           <iframe src="https://www.google.com/maps?q=Chennai,Tamil%20Nadu&output=embed" loading="lazy" title="location"></iframe>
         </div>

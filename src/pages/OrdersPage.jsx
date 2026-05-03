@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer";
 import ApiPage from "../api/ApiPage";
 
 const STEPS = ["Placed", "Confirmed", "Processing", "Shipped", "Delivered"];
@@ -7,6 +9,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState(null);
+  const [filter, setFilter] = useState("all");
 
   const token = localStorage.getItem("customer_token");
 
@@ -60,30 +63,58 @@ export default function OrdersPage() {
     return idx === -1 ? 0 : idx;
   };
 
+  const filteredOrders = filter === "all" 
+    ? orders 
+    : orders.filter(o => o.status?.toLowerCase() === filter);
+
+  const orderCounts = {
+    all: orders.length,
+    placed: orders.filter(o => o.status === "Placed").length,
+    shipped: orders.filter(o => o.status === "Shipped").length,
+    delivered: orders.filter(o => o.status === "Delivered").length,
+    cancelled: orders.filter(o => o.status === "Cancelled").length,
+  };
+
   return (
     <>
-      <header className="checkout-header">
-        <div className="checkout-header-inner">
-          <div className="checkout-logo" onClick={() => window.location.hash = "#home"}>COZY HOOD</div>
-          <nav className="orders-nav">
-            <a href="#collection/new-arrivals">Shop</a>
-            <a href="#cart">Cart</a>
-            <a href="#orders" className="active-link">My Orders</a>
-          </nav>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="my-orders-page">
         <div className="my-orders-container">
-          <div className="my-orders-header">
-            <div>
-              <h1>My Orders</h1>
-              <p>Track and manage your purchases</p>
+
+          {/* Page Header */}
+          <div className="orders-page-header">
+            <div className="orders-header-left">
+              <h1><i className="fa-solid fa-box"></i> My Orders</h1>
+              <p className="orders-subtitle">Track and manage all your purchases</p>
             </div>
             <button className="orders-shop-btn" onClick={() => window.location.hash = "#collection/new-arrivals"}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <i className="fa-solid fa-arrow-left"></i>
               Continue Shopping
             </button>
+          </div>
+
+          {/* Filter Tabs */}
+          <div className="orders-filter-tabs">
+            {[
+              { key: "all", label: "All Orders", icon: "fa-layer-group" },
+              { key: "placed", label: "Placed", icon: "fa-clock" },
+              { key: "shipped", label: "Shipped", icon: "fa-truck" },
+              { key: "delivered", label: "Delivered", icon: "fa-circle-check" },
+              { key: "cancelled", label: "Cancelled", icon: "fa-circle-xmark" },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                className={`filter-tab ${filter === tab.key ? "active" : ""}`}
+                onClick={() => setFilter(tab.key)}
+              >
+                <i className={`fa-solid ${tab.icon}`}></i>
+                <span>{tab.label}</span>
+                {orderCounts[tab.key] > 0 && (
+                  <span className="filter-count">{orderCounts[tab.key]}</span>
+                )}
+              </button>
+            ))}
           </div>
 
           {loading ? (
@@ -91,49 +122,58 @@ export default function OrdersPage() {
               <div className="orders-spinner"></div>
               <p>Loading your orders...</p>
             </div>
-          ) : orders.length === 0 ? (
+          ) : filteredOrders.length === 0 ? (
             <div className="orders-empty">
-              <div className="orders-empty-icon">📦</div>
-              <h2>No orders yet</h2>
-              <p>When you place an order, it will appear here for tracking.</p>
-              <button className="cart-shop-btn" onClick={() => window.location.hash = "#collection/new-arrivals"}>
-                Start Shopping
+              <div className="orders-empty-icon">
+                <i className="fa-solid fa-box-open"></i>
+              </div>
+              <h2>{filter === "all" ? "No orders yet" : `No ${filter} orders`}</h2>
+              <p>{filter === "all" ? "When you place an order, it will appear here for tracking." : "You don't have any orders with this status."}</p>
+              <button className="orders-empty-btn" onClick={() => filter === "all" ? (window.location.hash = "#collection/new-arrivals") : setFilter("all")}>
+                {filter === "all" ? "Start Shopping" : "View All Orders"}
               </button>
             </div>
           ) : (
             <div className="orders-list">
-              {orders.map(order => {
+              {filteredOrders.map(order => {
                 const stepIdx = getStepIndex(order.status);
                 const isCancelled = order.status === "Cancelled";
                 const isExpanded = expandedOrder === order.order_id;
                 const totalItems = order.items ? order.items.reduce((s, i) => s + i.quantity, 0) : 0;
 
                 return (
-                  <div key={order.order_id} className={`order-card-v2 ${isCancelled ? "cancelled" : ""}`}>
+                  <div key={order.order_id} className={`order-card-v2 ${isCancelled ? "cancelled" : ""} ${isExpanded ? "expanded" : ""}`}>
                     {/* Order Header */}
                     <div className="order-card-header" onClick={() => setExpandedOrder(isExpanded ? null : order.order_id)}>
+                      <div className="order-card-icon">
+                        <i className={`fa-solid ${isCancelled ? 'fa-circle-xmark' : order.status === 'Delivered' ? 'fa-circle-check' : 'fa-box'}`}></i>
+                      </div>
                       <div className="order-card-id">
-                        <span className="order-id-label">Order</span>
                         <span className="order-id-value">{order.order_id}</span>
+                        <span className="order-date">{formatDate(order.created_at)}</span>
                       </div>
                       <div className="order-card-meta">
-                        <span className="order-date">{formatDate(order.created_at)}</span>
                         <span className={`order-status-chip ${isCancelled ? "cancelled" : order.status?.toLowerCase()}`}>
                           {order.status}
                         </span>
+                        <span className="order-total-quick">₹{order.total_amount?.toLocaleString()}</span>
                       </div>
-                      <svg className={`order-expand-icon ${isExpanded ? "expanded" : ""}`} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M6 9l6 6 6-6"/>
-                      </svg>
+                      <div className={`order-expand-arrow ${isExpanded ? "rotated" : ""}`}>
+                        <i className="fa-solid fa-chevron-down"></i>
+                      </div>
                     </div>
 
                     {/* Order Items Preview */}
                     <div className="order-items-preview">
                       {order.items && order.items.slice(0, 3).map((item, i) => (
                         <div key={i} className="order-item-row">
-                          <div className="order-item-dot"></div>
-                          <span className="order-item-name">{item.product_name}</span>
-                          <span className="order-item-qty">×{item.quantity}</span>
+                          <div className="order-item-thumb">
+                            <i className="fa-solid fa-shirt"></i>
+                          </div>
+                          <div className="order-item-details">
+                            <span className="order-item-name">{item.product_name}</span>
+                            <span className="order-item-meta">Qty: {item.quantity}</span>
+                          </div>
                           <span className="order-item-price">₹{(item.price * item.quantity).toLocaleString()}</span>
                         </div>
                       ))}
@@ -142,13 +182,19 @@ export default function OrdersPage() {
                       )}
                     </div>
 
-                    {/* Order Total Bar */}
-                    <div className="order-total-bar">
-                      <div className="order-total-info">
-                        <span>{totalItems} item{totalItems > 1 ? "s" : ""}</span>
-                        <span className="order-payment-badge">{(order.payment_method || "").toUpperCase()}</span>
+                    {/* Order Summary Bar */}
+                    <div className="order-summary-bar">
+                      <div className="order-summary-left">
+                        <span className="summary-items">{totalItems} item{totalItems > 1 ? "s" : ""}</span>
+                        <span className="order-payment-badge">
+                          <i className={`fa-solid ${order.payment_method === 'cod' ? 'fa-money-bill' : 'fa-qrcode'}`}></i>
+                          {(order.payment_method || "").toUpperCase()}
+                        </span>
                       </div>
-                      <div className="order-total-amount">₹{order.total_amount?.toLocaleString()}</div>
+                      <div className="order-summary-total">
+                        <span className="total-label">Total</span>
+                        <span className="total-amount">₹{order.total_amount?.toLocaleString()}</span>
+                      </div>
                     </div>
 
                     {/* Tracking Section */}
@@ -159,7 +205,7 @@ export default function OrdersPage() {
                             <div key={step} className={`tracking-step ${i < stepIdx ? "done" : ""} ${i === stepIdx ? "current" : ""}`}>
                               <div className="tracking-dot">
                                 {i < stepIdx ? (
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M5 12l5 5L20 7"/></svg>
+                                  <i className="fa-solid fa-check"></i>
                                 ) : i === stepIdx ? (
                                   <div className="tracking-pulse"></div>
                                 ) : null}
@@ -174,7 +220,7 @@ export default function OrdersPage() {
 
                     {isCancelled && (
                       <div className="order-cancelled-badge">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+                        <i className="fa-solid fa-ban"></i>
                         This order has been cancelled
                       </div>
                     )}
@@ -184,32 +230,39 @@ export default function OrdersPage() {
                       <div className="order-expanded">
                         <div className="order-detail-grid">
                           <div className="order-detail-card">
-                            <span className="order-detail-label">📦 Delivery Address</span>
-                            <p className="order-detail-value">
-                              {order.customer_name}<br/>
+                            <div className="detail-card-header">
+                              <i className="fa-solid fa-location-dot"></i>
+                              <span>Delivery Address</span>
+                            </div>
+                            <div className="detail-card-body">
+                              <strong>{order.customer_name}</strong><br/>
                               {order.address}<br/>
                               {order.district && `${order.district}, `}{order.state}{order.pincode && ` - ${order.pincode}`}<br/>
-                              📱 {order.phone}
-                            </p>
+                              <span className="detail-phone"><i className="fa-solid fa-phone"></i> {order.phone}</span>
+                            </div>
                           </div>
                           <div className="order-detail-card">
-                            <span className="order-detail-label">🧾 Order Info</span>
-                            <p className="order-detail-value">
-                              Placed: {formatDateTime(order.created_at)}<br/>
-                              Payment: {(order.payment_method || "").toUpperCase()}<br/>
-                              Email: {order.email}
-                            </p>
+                            <div className="detail-card-header">
+                              <i className="fa-solid fa-receipt"></i>
+                              <span>Order Info</span>
+                            </div>
+                            <div className="detail-card-body">
+                              <div className="detail-info-row"><span>Placed</span><strong>{formatDateTime(order.created_at)}</strong></div>
+                              <div className="detail-info-row"><span>Payment</span><strong>{(order.payment_method || "").toUpperCase()}</strong></div>
+                              <div className="detail-info-row"><span>Email</span><strong>{order.email}</strong></div>
+                              {order.transaction_id && <div className="detail-info-row"><span>TXN ID</span><strong>{order.transaction_id}</strong></div>}
+                            </div>
                           </div>
                         </div>
 
                         <div className="order-actions-row">
                           {!isCancelled && order.status !== "Delivered" && order.status !== "Shipped" && (
                             <button className="order-cancel-btn" onClick={() => cancelOrder(order.order_id)}>
-                              Cancel Order
+                              <i className="fa-solid fa-ban"></i> Cancel Order
                             </button>
                           )}
-                          <button className="order-help-btn" onClick={() => alert("Contact support at: karthickhari851@gmail.com")}>
-                            Need Help?
+                          <button className="order-help-btn" onClick={() => window.location.hash = "#contact"}>
+                            <i className="fa-solid fa-headset"></i> Need Help?
                           </button>
                         </div>
                       </div>
@@ -221,6 +274,8 @@ export default function OrdersPage() {
           )}
         </div>
       </div>
+
+      <Footer />
     </>
   );
 }

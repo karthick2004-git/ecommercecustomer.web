@@ -10,10 +10,12 @@ export default function ReviewsSection() {
   return (
     <section className="reviews">
       <div className="container">
-        <h2 className="section-title">OUR HAPPY CUSTOMERS</h2>
+        <h2 className="section-title reveal">OUR HAPPY CUSTOMERS</h2>
         <div className="review-grid">
           {reviews.map((r, i) => (
-            <ReviewCard key={i} text={r.text} author={r.author} stars={r.stars} highlight={r.highlight} />
+            <div key={i} className={`reveal-scale stagger-${i + 1}`}>
+              <ReviewCard text={r.text} author={r.author} stars={r.stars} highlight={r.highlight} />
+            </div>
           ))}
         </div>
       </div>

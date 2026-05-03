@@ -7,12 +7,14 @@ export default function AuthPage({ initialView = "login" }) {
   const [formData, setFormData] = useState({ name: "", email: "", password: "", otp: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setView(initialView);
     setShowPassword(false);
     setError("");
+    setSuccess("");
   }, [initialView]);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,6 +23,7 @@ export default function AuthPage({ initialView = "login" }) {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess("");
     try {
       const data = await ApiPage.login({ email: formData.email, password: formData.password });
       localStorage.setItem("customer_token", data.token);
@@ -42,6 +45,7 @@ export default function AuthPage({ initialView = "login" }) {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess("");
     try {
       await ApiPage.register({ name: formData.name, email: formData.email, password: formData.password });
       await ApiPage.sendOtp(formData.email);
@@ -57,10 +61,11 @@ export default function AuthPage({ initialView = "login" }) {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess("");
     try {
       await ApiPage.verifyOtp(formData.email, formData.otp);
       setView("login");
-      setError("Email verified! Please login.");
+      setSuccess("Email verified! Please login.");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -78,6 +83,7 @@ export default function AuthPage({ initialView = "login" }) {
               <p>Please enter your details to sign in.</p>
             </div>
             {error && <div className="error-banner">{error}</div>}
+            {success && <div className="success-banner">{success}</div>}
             <form className="auth-main-form" onSubmit={handleLogin}>
               <div className="input-group">
                 <label>Email Address</label>
@@ -110,6 +116,7 @@ export default function AuthPage({ initialView = "login" }) {
               <p>Join us today! It only takes a minute.</p>
             </div>
             {error && <div className="error-banner">{error}</div>}
+            {success && <div className="success-banner">{success}</div>}
             <form className="auth-main-form" onSubmit={handleRegister}>
               <div className="input-group">
                 <label>Full Name</label>
@@ -146,6 +153,7 @@ export default function AuthPage({ initialView = "login" }) {
             </div>
             <div className="otp-info">Check: {formData.email}</div>
             {error && <div className="error-banner">{error}</div>}
+            {success && <div className="success-banner">{success}</div>}
             <form className="auth-main-form" onSubmit={handleVerifyOtp}>
               <div className="input-group">
                 <label>Verification Code</label>

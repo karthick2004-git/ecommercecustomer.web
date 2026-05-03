@@ -5,7 +5,74 @@
 .hero-text { max-width: 600px; color: white; }
 .hero-text h1 { font-family: "Anton", sans-serif; font-size: 110px; line-height: 1; }
 .hero-text h1 span { color: #c59b6d; }
-.hero-text p { font-size: 18px; margin: 20px 0; line-height: 1.6; }
+.hero-text p { font-size: 18px; margin: 20px 0 30px; line-height: 1.6; }
+
+/* HERO SEARCH SECTION */
+.hero-search-container {
+  margin-bottom: 40px;
+  max-width: 550px;
+}
+
+.hero-search-box {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  padding: 8px 8px 8px 24px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.hero-search-box:focus-within {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #c59b6d;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.search-icon {
+  color: #fff;
+  font-size: 18px;
+  margin-right: 15px;
+  opacity: 0.8;
+}
+
+.hero-search-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 16px;
+  padding: 10px 0;
+}
+
+.hero-search-box input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.search-btn {
+  padding: 12px 30px;
+  background: #c59b6d;
+  color: white;
+  border: none;
+  border-radius: 40px;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+  background: #d4a97a;
+  box-shadow: 0 5px 15px rgba(197, 155, 109, 0.4);
+}
+
 .primary-btn { padding: 14px 30px; background: #c59b6d; color: white; border: none; border-radius: 30px; font-weight: 600; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; }
 .primary-btn:hover { transform: translateY(-4px) scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
 .hero-card { background: #fff; color: #111; padding: 20px; border-radius: 15px; width: 250px; box-shadow: 0 15px 30px rgba(0,0,0,0.25); animation: floatHero 4s ease-in-out infinite; }
