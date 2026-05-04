@@ -3,7 +3,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="container footer-grid">
         <div className="footer-brand">
-          <h3 className="footer-logo">COZY HOOD</h3>
+          <h3 className="footer-logo">ATIX OUTFITS</h3>
           <p className="footer-desc">Premium fashion brand delivering comfort & style. Every piece is crafted with care for the modern individual.</p>
           <div className="footer-socials">
             <a href="#" className="social-link" aria-label="Instagram"><i className="fa-brands fa-instagram"></i></a>
@@ -53,7 +53,7 @@ export default function Footer() {
 
       <div className="footer-bottom">
         <div className="container footer-bottom-inner">
-          <p>© 2025 Cozy Hood. All Rights Reserved.</p>
+          <p>© 2025 Atix Outfits. All Rights Reserved.</p>
           <div className="footer-bottom-links">
             <a href="#">Privacy Policy</a>
             <a href="#">Terms of Service</a>
