@@ -1,25 +1,68 @@
 /* MODERN MOBILE RESPONSIVE OVERHAUL */
 @media (max-width: 992px) {
-  .hero { padding: 60px 0; }
+  .hero { padding: 60px 0; overflow: hidden; width: 100%; }
   .hero-content { 
     flex-direction: column !important; 
     align-items: center !important; 
     text-align: center !important; 
-    gap: 40px; 
+    gap: 35px; 
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 10px !important;
+    box-sizing: border-box;
   }
   .hero-text { 
+    width: 100% !important;
     max-width: 100%; 
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    margin: 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 0 !important;
   }
-  .hero-text h1 { font-size: clamp(38px, 10vw, 70px); line-height: 1.1; margin: 0 auto; }
-  .hero-text p { margin: 15px auto 25px; max-width: 90%; }
-  .hero-search-container { width: 100%; max-width: 500px; margin: 0 auto 30px; }
-  .hero-card { margin: 0 auto; transform: none !important; animation: floatHeroMobile 4s ease-in-out infinite; }
+  .hero-text h1 { 
+    font-size: clamp(30px, 12vw, 52px) !important; 
+    line-height: 1.1; 
+    margin: 0 auto 15px !important; 
+    width: 100%; 
+    text-align: center; 
+    white-space: normal !important;
+  }
+  .hero-text h1 br { display: none !important; }
+  .hero-text p { margin: 0 auto 25px !important; max-width: 95%; font-size: 14px; text-align: center; line-height: 1.4; }
   
-  .container { width: 90%; }
+  .hero-search-container { width: 100% !important; max-width: 100% !important; margin: 0 auto 25px !important; padding: 0 !important; box-sizing: border-box; }
+  .hero-search-box { 
+    width: 100% !important; 
+    padding: 4px 4px 4px 12px !important; 
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+  .hero-search-box input { 
+    width: 100% !important; 
+    flex: 1 !important; 
+    font-size: 13px !important; 
+    min-width: 0 !important;
+  }
+  .search-btn { padding: 8px 10px !important; font-size: 10px !important; flex-shrink: 0; min-width: 70px !important; }
+
+  .primary-btn { margin: 0 auto !important; display: block !important; width: fit-content; font-size: 14px !important; padding: 12px 25px !important; }
+
+  .hero-card { width: 90% !important; max-width: 200px !important; margin: 30px auto 0 !important; transform: none !important; }
+  
+  .container { width: 100% !important; padding: 0 15px !important; box-sizing: border-box !important; }
+
+  /* New Design Section Mobile Fix */
+  .new-hoodie-section { padding: 40px 0 !important; width: 100%; overflow: hidden; }
+  .big-title { font-size: clamp(30px, 12vw, 45px) !important; letter-spacing: 1px !important; text-align: center !important; margin: 0 auto !important; }
+  .design-text { font-size: clamp(28px, 10vw, 40px) !important; text-align: center !important; margin: 0 auto !important; }
+  .right-content { width: 100% !important; align-items: center !important; text-align: center !important; }
+  .right-content p { margin: 20px auto !important; text-align: center !important; font-size: 14px !important; max-width: 90%; }
+  .explore-btn { margin: 20px auto !important; display: block !important; width: fit-content; }
+  .left-images img { height: auto !important; max-height: 300px !important; width: 80% !important; margin: 0 auto !important; display: block; object-fit: contain; }
 }
 
 @keyframes floatHeroMobile {
@@ -90,9 +133,28 @@
 }
 
 @media (max-width: 576px) {
-  .product-grid { grid-template-columns: 1fr !important; }
+  .product-grid { 
+    grid-template-columns: repeat(2, 1fr) !important; 
+    gap: 12px !important; 
+  }
   .logo { font-size: 20px !important; letter-spacing: 1px; }
   .section-title, .featured-products h2 { font-size: 24px !important; margin-bottom: 30px !important; }
+
+  /* Product Card adjustments for 2-col mobile */
+  .product-card { padding: 10px !important; }
+  .product-image { height: 180px !important; }
+  .product-info h3 { font-size: 14px !important; }
+  .product-info .price { font-size: 15px !important; }
+  .add-to-cart-btn { padding: 8px !important; font-size: 12px !important; }
+
+  /* Collection Grid adjustments */
+  .collection-grid { 
+    grid-template-columns: repeat(2, 1fr) !important; 
+    gap: 15px !important; 
+  }
+  .collection-card { padding: 10px !important; }
+  .collection-card img { height: 120px !important; }
+  .collection-card h4 { font-size: 14px !important; }
   
   .top-bar { flex-direction: column; gap: 15px; text-align: center; }
   #selecte { width: 100%; }
