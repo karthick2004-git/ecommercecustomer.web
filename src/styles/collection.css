@@ -8,14 +8,119 @@
 .collection-card:hover img { transform: scale(1.08); }
 .collection-card h4 { margin-top: 15px; font-weight: 600; color: var(--text-primary); }
 
-/* NEW HOODIE SECTION */
-.new-hoodie-section { background: var(--bg-secondary); padding: 80px 5% 40px; overflow: hidden; border-radius: 30px; margin: 40px 0; }
-.big-title { font-family: "Oswald", sans-serif; font-size: 140px; letter-spacing: 4px; display: flex; align-items: center; justify-content: center; color: var(--primary); margin: 0; line-height: 0.9; text-transform: uppercase; opacity: 0.8; }
-.design-text { font-family: "Oswald", sans-serif; font-size: 110px; color: var(--accent); margin: 0; line-height: 0.9; text-transform: uppercase; }
-.right-content { width: 42%; display: flex; flex-direction: column; align-items: flex-start; }
-.right-content p { font-size: 15px; color: var(--text-secondary); margin-left: 100px; margin-top: 50px; line-height: 1.5; max-width: 800px; }
-.explore-btn { padding: 14px 30px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-md); font-size: 13px; letter-spacing: 1px; cursor: pointer; transition: 0.3s; margin-left: 100px; margin-top: 20px; }
-.explore-btn:hover { background: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-accent); }
+/* NEW HOODIE SECTION - UNIQUE LAYERED STYLE */
+.new-hoodie-section { 
+  background: var(--bg-secondary); 
+  padding: 100px 0; 
+  overflow: hidden; 
+  border-radius: var(--radius-xl); 
+  margin: 80px 0; 
+}
+
+.unique-layered-container {
+  position: relative;
+  height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-backdrop {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  text-align: center;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.bg-text-top {
+  font-family: "Oswald", sans-serif;
+  font-size: clamp(80px, 15vw, 180px);
+  line-height: 0.8;
+  color: var(--primary);
+  opacity: 0.08;
+  text-transform: uppercase;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.bg-text-bottom {
+  font-family: "Oswald", sans-serif;
+  font-size: clamp(60px, 12vw, 140px);
+  line-height: 0.8;
+  color: var(--accent);
+  opacity: 0.08;
+  text-transform: uppercase;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.floating-img-wrapper {
+  position: relative;
+  z-index: 2;
+  height: 110%;
+  transition: transform 0.6s var(--ease);
+}
+
+.large-shirt-img {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 40px rgba(0, 51, 102, 0.15));
+  border-radius: var(--radius-lg);
+}
+
+.side-content {
+  position: absolute;
+  right: 5%;
+  bottom: 10%;
+  z-index: 3;
+  max-width: 320px;
+}
+
+.content-box {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 30px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.explore-btn {
+  width: 100%;
+  padding: 14px 25px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s var(--ease);
+  margin-left: 0 !important; /* Resetting previous margin */
+  margin-top: 0 !important;
+}
+
+.explore-btn:hover {
+  background: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 102, 255, 0.2);
+}
 
 /* REVIEWS */
 .reviews { background: var(--bg-tertiary); color: var(--text-primary); padding: 80px 0; }
