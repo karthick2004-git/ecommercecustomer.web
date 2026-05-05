@@ -97,9 +97,10 @@
   }
 
   /* Menswear Stacking */
-  .menswear-box { flex-direction: column; text-align: center; gap: 30px; }
-  .menswear-img img { width: 250px; margin: 0 auto; }
+  .menswear-box { flex-direction: column; text-align: center; gap: 40px; }
+  .menswear-images-grid { grid-template-columns: 1fr; width: 100%; max-width: 350px; margin: 0 auto; }
   .menswear-content { max-width: 100%; }
+  .menswear-content h3 { font-size: 2.5rem; }
 
   /* Premium Reviews Scroll for Mobile */
   .review-grid { 

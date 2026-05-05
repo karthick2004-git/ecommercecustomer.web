@@ -132,11 +132,21 @@
 
 /* MENSWEAR */
 .menswear { padding: 100px 0; background: var(--bg-tertiary); }
-.menswear-box { display: flex; align-items: center; justify-content: space-between; gap: 50px; flex-wrap: wrap; }
-.menswear-img img { width: 300px; max-width: 100%; border-radius: 20px; box-shadow: var(--shadow-lg); transition: 0.3s; }
-.menswear-img img:hover { transform: scale(1.02); }
-.menswear-content h3 { font-family: "Oswald", sans-serif; font-size: 2.5rem; margin-bottom: 15px; color: var(--primary); text-transform: uppercase; }
-.menswear-content p { line-height: 1.7; margin-bottom: 20px; color: var(--text-secondary); }
+.menswear-box { display: flex; align-items: center; justify-content: center; gap: 80px; }
+.menswear-images-grid { 
+  display: grid; 
+  grid-template-columns: repeat(2, 1fr); 
+  gap: 20px; 
+  max-width: 600px;
+}
+.menswear-img { width: 100%; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-md); transition: 0.4s var(--ease); }
+.menswear-img img { width: 100%; height: 250px; object-fit: cover; border-radius: 20px; transition: 0.5s var(--ease); }
+.menswear-img:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
+.menswear-img:hover img { transform: scale(1.1); }
+.menswear-content { max-width: 450px; }
+.menswear-content h3 { font-family: "Oswald", sans-serif; font-size: 3.5rem; line-height: 1.1; margin-bottom: 20px; color: var(--primary); text-transform: uppercase; }
+.menswear-content p { line-height: 1.8; margin-bottom: 30px; color: var(--text-secondary); font-size: 1.1rem; }
+.menswear-content h4 { font-size: 2rem; font-weight: 800; color: var(--accent); margin-bottom: 30px; }
 
 /* FASHION TRENDS */
 .fashion-trends { position: relative; min-height: 100vh; background: var(--bg-secondary); overflow: hidden; display: flex; align-items: center; justify-content: space-between; padding: 0 8%; }
