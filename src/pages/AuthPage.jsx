@@ -179,7 +179,7 @@ export default function AuthPage({ initialView = "login" }) {
         <img src={authBg} alt="Fashion Auth" />
         <div className="auth-image-overlay">
           <h1>Experience<br />Luxury.</h1>
-          <p>Join the COZY HOOD community and get access to exclusive drops and premium quality essentials.</p>
+          <p>Join the ATIX OUTFITS community and get access to exclusive drops and premium quality essentials.</p>
         </div>
       </div>
       <div className="auth-form-side">

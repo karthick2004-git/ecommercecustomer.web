@@ -92,7 +92,7 @@ export default function CheckoutPage() {
     <>
       <header className="checkout-header">
         <div className="checkout-header-inner">
-          <div className="checkout-logo" onClick={() => window.location.hash = "#home"}>COZY HOOD</div>
+          <div className="checkout-logo" onClick={() => window.location.hash = "#home"}>ATIX OUTFITS</div>
           <div className="checkout-steps">
             <div className="step completed" onClick={() => window.location.hash = "#cart"}>
               <div className="step-num">✓</div>

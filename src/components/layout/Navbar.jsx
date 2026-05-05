@@ -44,7 +44,7 @@ export default function Navbar() {
         <div className="container nav-container">
           <div className="nav-left">
             <div className="logo" onClick={() => window.location.hash = "#home"} style={{ cursor: "pointer" }}>
-              COZY HOOD
+              ATIX OUTFITS
             </div>
           </div>
 

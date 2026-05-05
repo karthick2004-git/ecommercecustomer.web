@@ -26,7 +26,7 @@ export default function OrderSuccessPage({ orderId }) {
           </div>
 
           <h1 className="success-title">Order Placed Successfully!</h1>
-          <p className="success-subtitle">Thank you for shopping with Cozy Hood</p>
+          <p className="success-subtitle">Thank you for shopping with Atix Outfits</p>
 
           {orderId && (
             <div className="success-order-id">

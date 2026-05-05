@@ -59,7 +59,7 @@ export default function ContactSection() {
         </div>
         <div className="contact-map reveal-right">
           <h2>Our Location</h2>
-          <iframe src="https://www.google.com/maps?q=Chennai,Tamil%20Nadu&output=embed" loading="lazy" title="location"></iframe>
+          <iframe src="https://www.google.com/maps?q=84/c+muniyandi+kovil+street,bethaniyapuram,madurai+625016&output=embed" loading="lazy" title="location"></iframe>
         </div>
       </div>
       {loading && <LoadingSpinner />}

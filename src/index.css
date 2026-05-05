@@ -15,19 +15,20 @@
 /* ===== DESIGN TOKENS ===== */
 :root {
   /* Colors */
-  --primary: #1a1a2e;
-  --primary-light: #2d2d44;
-  --accent: #c59b6d;
-  --accent-hover: #d4a97a;
-  --accent-light: rgba(197, 155, 109, 0.1);
-  --bg: #faf9f7;
-  --bg-secondary: #f3f1ee;
+  --primary: #003366;
+  --primary-light: #004080;
+  --accent: #0066ff;
+  --accent-hover: #0052cc;
+  --accent-light: rgba(0, 102, 255, 0.1);
+  --bg: #ffffff;
+  --bg-secondary: #eaf3ff;
+  --bg-tertiary: #f8fbff;
   --card-bg: #ffffff;
   --text-primary: #1a1a2e;
-  --text-secondary: #6b7280;
+  --text-secondary: #4b5563;
   --text-muted: #9ca3af;
-  --border: #e8e6e3;
-  --border-light: #f0eee9;
+  --border: #dbeafe;
+  --border-light: #eff6ff;
   --success: #10b981;
   --success-light: rgba(16, 185, 129, 0.1);
   --danger: #ef4444;
@@ -35,9 +36,10 @@
   --warning: #f59e0b;
 
   /* Gradients */
-  --gradient-accent: linear-gradient(135deg, #c59b6d 0%, #d4a97a 100%);
-  --gradient-dark: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
-  --gradient-hero: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  --gradient-main: linear-gradient(135deg, #ffffff 0%, #eaf3ff 100%);
+  --gradient-accent: linear-gradient(135deg, #0066ff 0%, #00aaff 100%);
+  --gradient-dark: linear-gradient(135deg, #003366 0%, #0052cc 100%);
+  --gradient-hero: linear-gradient(135deg, #ffffff 0%, #dbeafe 100%);
 
   /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
@@ -82,7 +84,8 @@ html {
 
 body { 
   font-family: "Inter", "Poppins", -apple-system, BlinkMacSystemFont, sans-serif; 
-  background: var(--bg); 
+  background: var(--gradient-main);
+  background-attachment: fixed;
   color: var(--text-primary); 
   line-height: 1.6;
   overflow-x: hidden;

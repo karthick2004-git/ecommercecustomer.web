@@ -2,22 +2,46 @@ export default function ContactPage() {
   return (
     <section className="contact-page active">
       <div className="contact-container">
-        <div className="form-card">
-          <h2>Delivery Details</h2>
-          <p className="sub-text">Enter your shipping information below.</p>
-          <form onSubmit={e => e.preventDefault()}>
-            <input type="text" placeholder="Full Name" required />
-            <input type="tel" placeholder="Phone Number" required />
-            <textarea rows="3" placeholder="Address" required></textarea>
-            <input type="text" placeholder="Pincode" required />
-            <input type="text" defaultValue="Madurai" required />
-            <input type="text" defaultValue="Tamil Nadu" required />
-            <button type="submit">Contact more Details</button>
-          </form>
+        <div className="contact-info-card">
+          <h2>Get in Touch</h2>
+          <p className="sub-text">We'd love to hear from you. Here is how you can reach us.</p>
+          
+          <div className="contact-details">
+            <div className="contact-item">
+              <div className="icon"><i className="fa-solid fa-location-dot"></i></div>
+              <div className="text">
+                <h3>Our Address</h3>
+                <p>84/c muniyandi kovil street, bethaniyapuram, madurai 625016</p>
+              </div>
+            </div>
+
+            <div className="contact-item">
+              <div className="icon"><i className="fa-solid fa-phone"></i></div>
+              <div className="text">
+                <h3>Phone Number</h3>
+                <p>+91 8807756108</p>
+              </div>
+            </div>
+
+            <div className="contact-item">
+              <div className="icon"><i className="fa-solid fa-envelope"></i></div>
+              <div className="text">
+                <h3>Email Address</h3>
+                <p>atixoutfits@gmail.com</p>
+              </div>
+            </div>
+          </div>
         </div>
+
         <div className="map-card">
           <h2>Our Location</h2>
-          <iframe src="https://www.google.com/maps?q=Madurai&output=embed" title="map"></iframe>
+          <iframe 
+            src="https://www.google.com/maps?q=84/c+muniyandi+kovil+street,bethaniyapuram,madurai+625016&output=embed" 
+            title="map"
+            style={{ border: 0 }}
+            allowFullScreen=""
+            loading="lazy"
+          ></iframe>
         </div>
       </div>
     </section>
