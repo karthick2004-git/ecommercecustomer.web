@@ -15,7 +15,35 @@ export default function PaymentPage() {
       try {
         setLoading(true);
         const data = await ApiPage.fetchPaymentSettings();
-        setPaymentSettings(data.paymentSettings);
+        console.log("=== PAYMENT SETTINGS DEBUG ===");
+        console.log("Full Response:", data);
+        console.log("Payment Settings Object:", data.paymentSettings);
+        console.log("UPI Object:", data.paymentSettings?.upi);
+        console.log("QR Object:", data.paymentSettings?.qr);
+        console.log("UPI upiId field:", data.paymentSettings?.upi?.upiId);
+        console.log("UPI id field:", data.paymentSettings?.upi?.id);
+        console.log("UPI name field:", data.paymentSettings?.upi?.name);
+        console.log("UPI all keys:", data.paymentSettings?.upi ? Object.keys(data.paymentSettings.upi) : 'N/A');
+        console.log("================================");
+        
+        let paymentSettingsData = data.paymentSettings || {};
+        
+        // Ensure UPI and QR have all required fields
+        if (paymentSettingsData.upi) {
+          // Fill in missing fields from alternatives
+          if (!paymentSettingsData.upi.upiId && !paymentSettingsData.upi.id) {
+            // Try to get from QR if available
+            if (paymentSettingsData.qr?.upiId) {
+              paymentSettingsData.upi.upiId = paymentSettingsData.qr.upiId;
+              console.log("Using UPI ID from QR:", paymentSettingsData.upi.upiId);
+            } else if (paymentSettingsData.qr?.id) {
+              paymentSettingsData.upi.id = paymentSettingsData.qr.id;
+              console.log("Using ID from QR:", paymentSettingsData.upi.id);
+            }
+          }
+        }
+        
+        setPaymentSettings(paymentSettingsData);
       } catch (err) {
         console.error("Failed to load payment settings:", err);
         setError("Failed to load payment settings. Please try again.");
@@ -109,7 +137,7 @@ export default function PaymentPage() {
     <>
       <header className="checkout-header">
         <div className="checkout-header-inner">
-          <div className="checkout-logo" onClick={() => window.location.hash = "#home"}>ATIX OUTFITS</div>
+          <div className="checkout-logo" onClick={() => window.location.hash = "#home"}>COZY HOOD</div>
           <div className="checkout-steps">
             <div className="step completed" onClick={() => window.location.hash = "#cart"}>
               <div className="step-num">✓</div>
@@ -184,7 +212,7 @@ export default function PaymentPage() {
                     <span className="spinner"></span>
                     <p>Loading QR payment details...</p>
                   </div>
-                ) : !paymentSettings.upi ? (
+                ) : (!paymentSettings.upi && !paymentSettings.qr) ? (
                   <div className="payment-error-box">
                     <p>QR payment is currently unavailable. Please use another method.</p>
                   </div>
@@ -192,29 +220,63 @@ export default function PaymentPage() {
                   <div className="payment-bottom-qr-section">
                     <div className="qr-container">
                       <p className="qr-instruction">Scan to Pay or Click Button Below</p>
-                      <img 
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=${paymentSettings.upi.upiId || paymentSettings.upi.id}&pn=${encodeURIComponent(paymentSettings.upi.name)}&am=${grandTotal}&cu=INR`)}`} 
-                        alt="UPI QR Code" 
-                        className="upi-qr-img"
-                      />
+                      {paymentSettings.qr?.image ? (
+                        <img 
+                          src={paymentSettings.qr.image} 
+                          alt="UPI QR Code" 
+                          className="upi-qr-img"
+                        />
+                      ) : (
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=${paymentSettings.upi?.upiId || paymentSettings.upi?.id || paymentSettings.qr?.upiId || ''}&pn=${encodeURIComponent(paymentSettings.upi?.name || paymentSettings.qr?.name || '')}&am=${grandTotal}&cu=INR`)}`} 
+                          alt="UPI QR Code" 
+                          className="upi-qr-img"
+                        />
+                      )}
                       
-                      <a 
-                        href={`upi://pay?pa=${paymentSettings.upi.upiId || paymentSettings.upi.id}&pn=${encodeURIComponent(paymentSettings.upi.name)}&am=${grandTotal}&cu=INR`}
+                      <button 
+                        onClick={() => {
+                          const upiId = paymentSettings.upi?.upiId || paymentSettings.upi?.id || paymentSettings.qr?.upiId || paymentSettings.qr?.id;
+                          const payeeName = paymentSettings.upi?.name || paymentSettings.qr?.name || 'Cozy Hood Store';
+                          
+                          if (!upiId) {
+                            alert('UPI ID not configured. Please contact support.');
+                            return;
+                          }
+                          
+                          // Proper UPI deep link format
+                          const upiDeepLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${grandTotal}&tn=${encodeURIComponent('Payment for Order')}&tr=${Date.now()}&cu=INR`;
+                          
+                          console.log('Opening UPI Deep Link:', upiDeepLink);
+                          window.location.href = upiDeepLink;
+                          
+                          // Fallback: if app doesn't open in 2 seconds, show message
+                          setTimeout(() => {
+                            alert(`If no UPI app opened, please use manual payment method.\n\nUPI ID: ${upiId}\nAmount: ₹${grandTotal}`);
+                          }, 2000);
+                        }}
                         className="upi-deeplink-btn"
                       >
                         <i className="fa-solid fa-mobile-screen-button"></i> Pay via UPI App
-                      </a>
+                      </button>
 
                       <div className="upi-details">
-                        <p><strong>Payee:</strong> {paymentSettings.upi.name}</p>
-                        <p><strong>UPI ID:</strong> {paymentSettings.upi.upiId || paymentSettings.upi.id}</p>
-                        <p className="qr-total">Amount: ₹{grandTotal.toLocaleString()}</p>
+                        <p style={{ marginBottom: '12px' }}><strong>Payee:</strong> {paymentSettings.upi?.name || paymentSettings.qr?.name || 'Merchant'}</p>
+                        <p style={{ marginBottom: '12px', textAlign: 'center' }}>
+                          <strong style={{ display: 'block', marginBottom: '6px' }}>UPI ID:</strong>
+                          <span style={{ fontSize: '16px', fontWeight: '700', color: '#003366', letterSpacing: '0.5px' }}>
+                            {paymentSettings.upi?.upiId || paymentSettings.upi?.id || paymentSettings.qr?.upiId || paymentSettings.qr?.id || (
+                              <span style={{ color: '#ff6b6b', fontWeight: '500' }}>Contact admin</span>
+                            )}
+                          </span>
+                        </p>
+                        <p className="qr-total" style={{ marginBottom: '0' }}>Amount: ₹{grandTotal.toLocaleString()}</p>
                       </div>
                     </div>
                     
                     <div className="verification-section">
                       <div className="form-group full-width">
-                        <label htmlFor="proof-upload">Upload Proof Screenshot <span className="required">*</span></label>
+                        <label htmlFor="proof-upload">Upload Payment Screenshot <span className="required">*</span></label>
                         <div className="file-upload-wrapper">
                           <input 
                             id="proof-upload" type="file" accept="image/*"
