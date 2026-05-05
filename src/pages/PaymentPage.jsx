@@ -5,7 +5,6 @@ import ApiPage from "../api/ApiPage";
 export default function PaymentPage() {
   const { cart, cartTotal, cartCount, address, clearCart } = useCart();
   const [payMethod, setPayMethod] = useState("cod");
-  const [transactionId, setTransactionId] = useState("");
   const [proofImage, setProofImage] = useState(null);
   const [paymentSettings, setPaymentSettings] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -45,18 +44,7 @@ export default function PaymentPage() {
 
 
   const handlePlaceOrder = async () => {
-    if (payMethod === "qr") {
-      const utrRegex = /^\d{12}$/;
-      if (!transactionId.trim()) {
-        setError("Please enter the 12-digit Transaction ID / UTR");
-        return;
-      }
-      if (!utrRegex.test(transactionId.trim())) {
-        setError("Transaction ID / UTR must be exactly 12 digits");
-        return;
-      }
-    }
-    
+    // QR payment validation
     if (payMethod === "qr" && !proofImage) {
       setError("Please upload the payment screenshot as proof");
       return;
@@ -77,8 +65,18 @@ export default function PaymentPage() {
         formData.append("district", address.district);
         formData.append("pincode", address.pincode);
         formData.append("paymentMethod", payMethod);
-        formData.append("transactionId", transactionId);
-        formData.append("paymentProof", proofImage);
+        
+        // Convert image to base64 if it's a file
+        if (proofImage instanceof File) {
+          const reader = new FileReader();
+          const base64Promise = new Promise((resolve) => {
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(proofImage);
+          });
+          const base64String = await base64Promise;
+          formData.append("paymentProof", base64String);
+        }
+
         formData.append("items", JSON.stringify(cart.map(item => ({ id: item.id, quantity: item.quantity || 1 }))));
         if (user?.email) formData.append("email", user.email);
 
@@ -195,13 +193,13 @@ export default function PaymentPage() {
                     <div className="qr-container">
                       <p className="qr-instruction">Scan to Pay or Click Button Below</p>
                       <img 
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=${paymentSettings.upi.upiId}&pn=${encodeURIComponent(paymentSettings.upi.name)}&am=${grandTotal}&cu=INR`)}`} 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=${paymentSettings.upi.upiId || paymentSettings.upi.id}&pn=${encodeURIComponent(paymentSettings.upi.name)}&am=${grandTotal}&cu=INR`)}`} 
                         alt="UPI QR Code" 
                         className="upi-qr-img"
                       />
                       
                       <a 
-                        href={`upi://pay?pa=${paymentSettings.upi.upiId}&pn=${encodeURIComponent(paymentSettings.upi.name)}&am=${grandTotal}&cu=INR`}
+                        href={`upi://pay?pa=${paymentSettings.upi.upiId || paymentSettings.upi.id}&pn=${encodeURIComponent(paymentSettings.upi.name)}&am=${grandTotal}&cu=INR`}
                         className="upi-deeplink-btn"
                       >
                         <i className="fa-solid fa-mobile-screen-button"></i> Pay via UPI App
@@ -209,28 +207,13 @@ export default function PaymentPage() {
 
                       <div className="upi-details">
                         <p><strong>Payee:</strong> {paymentSettings.upi.name}</p>
-                        <p><strong>UPI ID:</strong> {paymentSettings.upi.upiId}</p>
+                        <p><strong>UPI ID:</strong> {paymentSettings.upi.upiId || paymentSettings.upi.id}</p>
                         <p className="qr-total">Amount: ₹{grandTotal.toLocaleString()}</p>
                       </div>
                     </div>
                     
-                    <div className="verification-grid">
-                      <div className="form-group">
-                        <label htmlFor="txn-id">Transaction ID / UTR <span className="required">*</span></label>
-                        <input 
-                          id="txn-id" type="text" placeholder="12-digit UTR number"
-                          maxLength={12}
-                          value={transactionId} 
-                          onChange={e => { 
-                            const val = e.target.value.replace(/\D/g, "");
-                            setTransactionId(val); 
-                            setError(""); 
-                          }}
-                          className="txn-input"
-                        />
-                      </div>
-                      
-                      <div className="form-group">
+                    <div className="verification-section">
+                      <div className="form-group full-width">
                         <label htmlFor="proof-upload">Upload Proof Screenshot <span className="required">*</span></label>
                         <div className="file-upload-wrapper">
                           <input 
