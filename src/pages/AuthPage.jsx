@@ -28,7 +28,18 @@ export default function AuthPage({ initialView = "login" }) {
       const data = await ApiPage.login({ email: formData.email, password: formData.password });
       localStorage.setItem("customer_token", data.token);
       localStorage.setItem("customer_user", JSON.stringify(data.customer));
-      window.location.hash = "#home";
+      
+      // Smart redirect: if cart has items, proceed to checkout (#address), otherwise go home
+      try {
+        const cartStored = JSON.parse(localStorage.getItem("cart") || "[]");
+        if (Array.isArray(cartStored) && cartStored.length > 0) {
+          window.location.hash = "#address";
+        } else {
+          window.location.hash = "#home";
+        }
+      } catch (err) {
+        window.location.hash = "#home";
+      }
       window.location.reload();
     } catch (err) {
       if (err.message.includes("verify")) {
