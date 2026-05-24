@@ -16,9 +16,19 @@ const INDIAN_STATES = [
 export default function CheckoutPage() {
   const { cart, cartTotal, cartCount, address, setAddress } = useCart();
   const [errors, setErrors] = useState({});
+  const [showForm, setShowForm] = useState(true);
 
   const shipping = cartTotal > 999 ? 0 : 79;
   const grandTotal = cartTotal + shipping;
+
+  const hasSavedAddress = !!(address.name && address.phone && address.address && address.pincode);
+
+  useEffect(() => {
+    // If we have a saved address in localStorage, default to showing the saved card
+    if (hasSavedAddress) {
+      setShowForm(false);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchLastAddress = async () => {
@@ -29,14 +39,16 @@ export default function CheckoutPage() {
         const data = await ApiPage.fetchMyOrders();
         if (data && data.orders && data.orders.length > 0) {
           const lastOrder = data.orders[0];
-          setAddress({
+          const fetchedAddr = {
             name: lastOrder.customer_name || "",
             phone: lastOrder.phone || "",
             address: lastOrder.address || "",
             state: lastOrder.state || "",
             district: lastOrder.district || "",
             pincode: lastOrder.pincode || ""
-          });
+          };
+          setAddress(fetchedAddr);
+          setShowForm(false);
         } else {
           // If no orders, try to at least fill the name from user profile
           const userStored = localStorage.getItem("customer_user");
@@ -83,6 +95,14 @@ export default function CheckoutPage() {
     }
   };
 
+  const handleDeliverToSaved = () => {
+    if (validate()) {
+      window.location.hash = "#payment";
+    } else {
+      setShowForm(true);
+    }
+  };
+
   if (cart.length === 0) {
     window.location.hash = "#cart";
     return null;
@@ -116,84 +136,208 @@ export default function CheckoutPage() {
       <div className="address-page">
         <div className="address-main">
           <div className="address-form-section">
-            <h2>Shipping Address</h2>
-            <p className="address-subtitle">Where should we deliver your order?</p>
-
-            <form onSubmit={handleSubmit} className="address-form">
-              <div className="form-group">
-                <label htmlFor="addr-name">Full Name <span className="required">*</span></label>
-                <input 
-                  id="addr-name" type="text" placeholder="Enter your full name"
-                  value={address.name} onChange={e => handleChange("name", e.target.value)}
-                  className={errors.name ? "input-error" : ""}
-                />
-                {errors.name && <span className="field-error">{errors.name}</span>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="addr-phone">Mobile Number <span className="required">*</span></label>
-                <div className="phone-input">
-                  <span className="phone-prefix">+91</span>
-                  <input 
-                    id="addr-phone" type="tel" placeholder="10-digit mobile number" maxLength="10"
-                    value={address.phone} onChange={e => handleChange("phone", e.target.value.replace(/\D/g, ""))}
-                    className={errors.phone ? "input-error" : ""}
-                  />
+            
+            {!showForm && hasSavedAddress ? (
+              <div className="saved-address-container" style={{
+                background: "var(--card-bg)",
+                border: "1px solid var(--border-light)",
+                borderRadius: "var(--radius-lg)",
+                padding: "30px",
+                boxShadow: "var(--shadow-sm)",
+                transition: "all 0.3s ease",
+                marginBottom: "30px",
+                position: "relative"
+              }}>
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "20px"
+                }}>
+                  <h3 style={{
+                    margin: 0,
+                    fontSize: "18px",
+                    fontWeight: "700",
+                    color: "var(--text-primary)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px"
+                  }}>
+                    <i className="fa-solid fa-house-chimney-user" style={{ color: "var(--accent)", fontSize: "20px" }}></i>
+                    Deliver to Saved Address
+                  </h3>
+                  <span style={{
+                    background: "var(--accent-light)",
+                    color: "var(--accent)",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    padding: "4px 12px",
+                    borderRadius: "20px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px"
+                  }}>Default</span>
                 </div>
-                {errors.phone && <span className="field-error">{errors.phone}</span>}
-              </div>
 
-              <div className="form-group">
-                <label htmlFor="addr-address">Address <span className="required">*</span></label>
-                <textarea 
-                  id="addr-address" placeholder="House No, Street, Landmark"
-                  value={address.address} onChange={e => handleChange("address", e.target.value)}
-                  className={errors.address ? "input-error" : ""} rows="3"
-                ></textarea>
-                {errors.address && <span className="field-error">{errors.address}</span>}
-              </div>
+                <div className="saved-address-body" style={{
+                  background: "var(--bg-secondary)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "20px",
+                  marginBottom: "24px",
+                  border: "1px dashed var(--border)"
+                }}>
+                  <p style={{ margin: "0 0 10px", fontWeight: "700", fontSize: "16px", color: "var(--text-primary)" }}>
+                    {address.name}
+                  </p>
+                  <p style={{ margin: "0 0 12px", color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.6" }}>
+                    {address.address}<br />
+                    {address.district}, {address.state} - <strong style={{ color: "var(--text-primary)" }}>{address.pincode}</strong>
+                  </p>
+                  <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <i className="fa-solid fa-phone" style={{ color: "var(--accent)", fontSize: "12px" }}></i>
+                    <span>+91 <strong>{address.phone}</strong></span>
+                  </p>
+                </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="addr-state">State <span className="required">*</span></label>
-                  <select 
-                    id="addr-state" value={address.state}
-                    onChange={e => handleChange("state", e.target.value)}
-                    className={errors.state ? "input-error" : ""}
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <button 
+                    onClick={handleDeliverToSaved}
+                    className="address-continue-btn"
+                    style={{ width: "100%", margin: 0 }}
                   >
-                    <option value="">Select State</option>
-                    {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                  {errors.state && <span className="field-error">{errors.state}</span>}
-                </div>
-                <div className="form-group">
-                  <label htmlFor="addr-district">District <span className="required">*</span></label>
-                  <input 
-                    id="addr-district" type="text" placeholder="Enter district"
-                    value={address.district} onChange={e => handleChange("district", e.target.value)}
-                    className={errors.district ? "input-error" : ""}
-                  />
-                  {errors.district && <span className="field-error">{errors.district}</span>}
+                    Deliver to this Address
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                  </button>
+
+                  <button 
+                    onClick={() => setShowForm(true)}
+                    style={{
+                      background: "transparent",
+                      border: "1.5px solid var(--border)",
+                      color: "var(--text-secondary)",
+                      padding: "14px",
+                      borderRadius: "var(--radius-md)",
+                      fontSize: "13px",
+                      fontWeight: "700",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      transition: "all 0.2s ease"
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.color = "var(--accent)"; }}
+                    onMouseOut={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-secondary)"; }}
+                  >
+                    <i className="fa-solid fa-pen-to-square"></i>
+                    Deliver to a Different Address
+                  </button>
                 </div>
               </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "15px" }}>
+                  <h2 style={{ margin: 0 }}>Shipping Address</h2>
+                  {hasSavedAddress && (
+                    <button 
+                      type="button"
+                      onClick={() => setShowForm(false)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "var(--accent)",
+                        fontWeight: "600",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px"
+                      }}
+                    >
+                      <i className="fa-solid fa-arrow-left"></i> Back to Saved Address
+                    </button>
+                  )}
+                </div>
+                <p className="address-subtitle">Where should we deliver your order?</p>
 
-              <div className="form-group form-group-small">
-                <label htmlFor="addr-pincode">Pincode <span className="required">*</span></label>
-                <input 
-                  id="addr-pincode" type="text" placeholder="6-digit pincode" maxLength="6"
-                  value={address.pincode} onChange={e => handleChange("pincode", e.target.value.replace(/\D/g, ""))}
-                  className={errors.pincode ? "input-error" : ""}
-                />
-                {errors.pincode && <span className="field-error">{errors.pincode}</span>}
-              </div>
+                <form onSubmit={handleSubmit} className="address-form">
+                  <div className="form-group">
+                    <label htmlFor="addr-name">Full Name <span className="required">*</span></label>
+                    <input 
+                      id="addr-name" type="text" placeholder="Enter your full name"
+                      value={address.name} onChange={e => handleChange("name", e.target.value)}
+                      className={errors.name ? "input-error" : ""}
+                    />
+                    {errors.name && <span className="field-error">{errors.name}</span>}
+                  </div>
 
-              <button type="submit" className="address-continue-btn">
-                Continue to Payment
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </button>
-            </form>
+                  <div className="form-group">
+                    <label htmlFor="addr-phone">Mobile Number <span className="required">*</span></label>
+                    <div className="phone-input">
+                      <span className="phone-prefix">+91</span>
+                      <input 
+                        id="addr-phone" type="tel" placeholder="10-digit mobile number" maxLength="10"
+                        value={address.phone} onChange={e => handleChange("phone", e.target.value.replace(/\D/g, ""))}
+                        className={errors.phone ? "input-error" : ""}
+                      />
+                    </div>
+                    {errors.phone && <span className="field-error">{errors.phone}</span>}
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="addr-address">Address <span className="required">*</span></label>
+                    <textarea 
+                      id="addr-address" placeholder="House No, Street, Landmark"
+                      value={address.address} onChange={e => handleChange("address", e.target.value)}
+                      className={errors.address ? "input-error" : ""} rows="3"
+                    ></textarea>
+                    {errors.address && <span className="field-error">{errors.address}</span>}
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="addr-state">State <span className="required">*</span></label>
+                      <select 
+                        id="addr-state" value={address.state}
+                        onChange={e => handleChange("state", e.target.value)}
+                        className={errors.state ? "input-error" : ""}
+                      >
+                        <option value="">Select State</option>
+                        {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                      {errors.state && <span className="field-error">{errors.state}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="addr-district">District <span className="required">*</span></label>
+                      <input 
+                        id="addr-district" type="text" placeholder="Enter district"
+                        value={address.district} onChange={e => handleChange("district", e.target.value)}
+                        className={errors.district ? "input-error" : ""}
+                      />
+                      {errors.district && <span className="field-error">{errors.district}</span>}
+                    </div>
+                  </div>
+
+                  <div className="form-group form-group-small">
+                    <label htmlFor="addr-pincode">Pincode <span className="required">*</span></label>
+                    <input 
+                      id="addr-pincode" type="text" placeholder="6-digit pincode" maxLength="6"
+                      value={address.pincode} onChange={e => handleChange("pincode", e.target.value.replace(/\D/g, ""))}
+                      className={errors.pincode ? "input-error" : ""}
+                    />
+                    {errors.pincode && <span className="field-error">{errors.pincode}</span>}
+                  </div>
+
+                  <button type="submit" className="address-continue-btn">
+                    Continue to Payment
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                  </button>
+                </form>
+              </>
+            )}
           </div>
 
           <div className="address-summary-section">
