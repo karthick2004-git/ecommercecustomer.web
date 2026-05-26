@@ -11,7 +11,7 @@ export default function CartPage() {
       <>
         <header className="checkout-header">
           <div className="checkout-header-inner">
-            <div className="checkout-logo" onClick={() => window.location.hash = "#home"}>COZY HOOD</div>
+            <div className="checkout-logo" onClick={() => window.location.hash = "#home"}>ATIX OUTFITS</div>
           </div>
         </header>
         <div className="cart-empty">
@@ -38,7 +38,7 @@ export default function CartPage() {
     <>
       <header className="checkout-header">
         <div className="checkout-header-inner">
-          <div className="checkout-logo" onClick={() => window.location.hash = "#home"}>COZY HOOD</div>
+          <div className="checkout-logo" onClick={() => window.location.hash = "#home"}>ATIX OUTFITS</div>
           <div className="checkout-steps">
             <div className="step active">
               <div className="step-num">1</div>

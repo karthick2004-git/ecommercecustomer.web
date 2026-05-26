@@ -17,12 +17,6 @@ export default function MenswearSection() {
             </div>
           ))}
         </div>
-        <div className="menswear-content reveal-right">
-          <h3>Urban Street Hoodie</h3>
-          <p>Premium menswear hoodie designed for modern street fashion. Soft cotton blend, relaxed fit, and ultra stylish look.</p>
-          <h4>$249.00</h4>
-          <button className="primary-btn" onClick={() => window.location.hash = "#collection"}>Shop Now →</button>
-        </div>
       </div>
     </section>
   );
