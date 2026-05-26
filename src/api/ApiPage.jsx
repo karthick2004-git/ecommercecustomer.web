@@ -72,6 +72,14 @@ const ApiPage = {
   fetchPaymentSettings: async () => {
     return await ApiClientPublic(ApiEndUrl.customer.paymentSettings);
   },
+
+  fetchSimilarProducts: async (category, excludeId) => {
+    const url = `${ApiEndUrl.customer.products}?category=${category}`;
+    const data = await ApiClientPublic(url);
+    return {
+      products: (data.products || []).filter(p => p.id !== Number(excludeId)).slice(0, 8)
+    };
+  },
 };
 
 export default ApiPage;

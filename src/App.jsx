@@ -30,9 +30,23 @@ function AppRouter() {
       const id = hash.replace("#product/", "");
       return <ProductPage productId={id} />;
     }
+    const isLoggedIn = !!localStorage.getItem("customer_token");
+
     if (hash === "#cart") return <CartPage />;
-    if (hash === "#address") return <CheckoutPage />;
-    if (hash === "#payment") return <PaymentPage />;
+    if (hash === "#address") {
+      if (!isLoggedIn) {
+        window.location.hash = "#login";
+        return null;
+      }
+      return <CheckoutPage />;
+    }
+    if (hash === "#payment") {
+      if (!isLoggedIn) {
+        window.location.hash = "#login";
+        return null;
+      }
+      return <PaymentPage />;
+    }
     if (hash.startsWith("#order-success")) {
       const orderId = hash.replace("#order-success/", "").replace("#order-success", "");
       return <OrderSuccessPage orderId={orderId} />;
@@ -41,7 +55,13 @@ function AppRouter() {
       window.location.hash = "#cart";
       return null;
     }
-    if (hash === "#orders") return <OrdersPage />;
+    if (hash === "#orders") {
+      if (!isLoggedIn) {
+        window.location.hash = "#login";
+        return null;
+      }
+      return <OrdersPage />;
+    }
     if (hash === "#login") return <AuthPage initialView="login" />;
     if (hash === "#signup") return <AuthPage initialView="signup" />;
     return <><Navbar /><HomePage /><Footer /></>;
