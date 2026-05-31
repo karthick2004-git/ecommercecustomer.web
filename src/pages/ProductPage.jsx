@@ -21,6 +21,29 @@ function normalizeImageList(images) {
   return [];
 }
 
+function normalizeReviewList(reviews) {
+  if (Array.isArray(reviews)) return reviews;
+  if (typeof reviews === "string") {
+    try {
+      const parsed = JSON.parse(reviews);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function toInitials(name) {
+  if (!name) return "CU";
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0].toUpperCase())
+    .join("");
+}
+
 /* ══════════════════════════════════════════════ */
 
 export default function ProductPage({ productId }) {
@@ -33,10 +56,14 @@ export default function ProductPage({ productId }) {
   const [addedToCart, setAddedToCart] = useState(false);
   const [similarProducts, setSimilarProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [reviewForm, setReviewForm] = useState({ name: "", rating: 5, text: "", image: "", imageName: "" });
+  const [reviewError, setReviewError] = useState("");
   const [zoomStyle, setZoomStyle] = useState({ display: "none" });
   const [pinned, setPinned] = useState(false);
   const imgRef = useRef(null);
   const similarRef = useRef(null);
+  const reviewImageInputRef = useRef(null);
 
   const cartItem = cart.find(item => item.id === parseInt(productId));
   const qty = cartItem ? (cartItem.quantity || 1) : 0;
@@ -85,6 +112,25 @@ export default function ProductPage({ productId }) {
     loadProduct();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [productId]);
+
+  useEffect(() => {
+    const reviewKey = `product_reviews_${productId}`;
+    let savedReviews = [];
+    try {
+      const raw = localStorage.getItem(reviewKey);
+      savedReviews = raw ? normalizeReviewList(JSON.parse(raw)) : [];
+    } catch {
+      savedReviews = [];
+    }
+
+    const backendReviews = normalizeReviewList(product?.reviews);
+    const merged = [...savedReviews, ...backendReviews].sort((a, b) => {
+      const aTime = new Date(a.date || 0).getTime();
+      const bTime = new Date(b.date || 0).getTime();
+      return bTime - aTime;
+    });
+    setReviews(merged);
+  }, [productId, product?.reviews]);
 
   const toggleWishlist = (id) => {
     setWishlist(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -178,6 +224,64 @@ export default function ProductPage({ productId }) {
     }
   };
 
+  const renderStars = (count) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <i key={i} className={`fa-star ${i < count ? "fa-solid" : "fa-regular"}`}></i>
+    ));
+  };
+
+  const ratingCounts = reviews.reduce((acc, review) => {
+    const value = Number(review.rating) || 0;
+    if (value >= 1 && value <= 5) acc[value] += 1;
+    return acc;
+  }, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
+
+  const totalRatings = reviews.length;
+  const overallRating = totalRatings
+    ? (reviews.reduce((sum, review) => sum + (Number(review.rating) || 0), 0) / totalRatings)
+    : 0;
+
+  const handleReviewImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setReviewForm(prev => ({ ...prev, image: String(reader.result || ""), imageName: file.name || "review-image.jpg" }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmitReview = (e) => {
+    e.preventDefault();
+    const trimmedText = reviewForm.text.trim();
+    const trimmedName = reviewForm.name.trim() || "Customer";
+    if (!trimmedText) {
+      setReviewError("Please enter your review text");
+      return;
+    }
+
+    const newReview = {
+      id: `local-${Date.now()}`,
+      name: trimmedName,
+      avatar: toInitials(trimmedName),
+      rating: Number(reviewForm.rating),
+      text: trimmedText,
+      title: trimmedText.length > 45 ? `${trimmedText.slice(0, 45)}...` : trimmedText,
+      image: reviewForm.image || "",
+      date: new Date().toISOString(),
+      verified: false,
+      helpful: 0,
+    };
+
+    const nextReviews = [newReview, ...reviews];
+    setReviews(nextReviews);
+    localStorage.setItem(`product_reviews_${productId}`, JSON.stringify(nextReviews));
+    setReviewForm({ name: reviewForm.name, rating: 5, text: "", image: "", imageName: "" });
+    setReviewError("");
+    if (reviewImageInputRef.current) reviewImageInputRef.current.value = "";
+  };
+
   return (
     <>
       <Navbar />
@@ -223,6 +327,13 @@ export default function ProductPage({ productId }) {
           <div className="pdp-info">
             <span className="pdp-category-label">{categoryLabel}</span>
             <h1 className="pdp-title">{product.name}</h1>
+
+            {totalRatings > 0 && (
+              <div className="pdp-rating-inline">
+                <span className="pdp-rating-badge">{overallRating.toFixed(1)} <i className="fa-solid fa-star"></i></span>
+                <span className="pdp-rating-count">{totalRatings.toLocaleString()} Review{totalRatings > 1 ? "s" : ""}</span>
+              </div>
+            )}
 
             {/* Offer label */}
             <div className="pdp-special-price-label">Special Price</div>
@@ -375,6 +486,147 @@ export default function ProductPage({ productId }) {
           </div>
         </section>
       )}
+
+      <section className="pdp-reviews-section">
+        <div className="pdp-tabs">
+          <button className="pdp-tab active" type="button">
+            <i className="fa-solid fa-star-half-stroke"></i> Ratings & Reviews
+          </button>
+        </div>
+
+        <div className="pdp-reviews-content animate-fadeIn">
+          <div className="pdp-rating-overview">
+            <div className="pdp-rating-left">
+              <div className="pdp-rating-big">{totalRatings > 0 ? overallRating.toFixed(1) : "0.0"}</div>
+              <div className="pdp-rating-stars-big">{renderStars(Math.round(overallRating || 0))}</div>
+              <div className="pdp-rating-total">{totalRatings.toLocaleString()} Review{totalRatings > 1 ? "s" : ""}</div>
+            </div>
+            <div className="pdp-rating-bars">
+              {[5, 4, 3, 2, 1].map(star => (
+                <div className="pdp-bar-row" key={star}>
+                  <span className="pdp-bar-label">{star}<i className="fa-solid fa-star"></i></span>
+                  <div className="pdp-bar-track">
+                    <div
+                      className={`pdp-bar-fill pdp-bar-${star}`}
+                      style={{ width: `${totalRatings ? (ratingCounts[star] / totalRatings) * 100 : 0}%` }}
+                    ></div>
+                  </div>
+                  <span className="pdp-bar-count">{ratingCounts[star]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="pdp-review-card" style={{ marginBottom: 16 }}>
+            <h4 className="pdp-review-title" style={{ marginBottom: 12 }}>Write a Review</h4>
+            <form onSubmit={handleSubmitReview}>
+              <div style={{ display: "grid", gap: 10 }}>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Your name"
+                  value={reviewForm.name}
+                  onChange={(e) => setReviewForm(prev => ({ ...prev, name: e.target.value }))}
+                />
+                <div style={{ display: "flex", alignItems: "center", gap: 10, color: "#f59e0b", fontSize: 20 }}>
+                  {Array.from({ length: 5 }, (_, idx) => {
+                    const value = idx + 1;
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setReviewForm(prev => ({ ...prev, rating: value }))}
+                        style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "inherit" }}
+                        aria-label={`Rate ${value} star`}
+                      >
+                        <i className={`fa-star ${value <= reviewForm.rating ? "fa-solid" : "fa-regular"}`}></i>
+                      </button>
+                    );
+                  })}
+                </div>
+                <textarea
+                  className="input-field"
+                  placeholder="Share your experience with this product"
+                  rows={4}
+                  value={reviewForm.text}
+                  onChange={(e) => setReviewForm(prev => ({ ...prev, text: e.target.value }))}
+                />
+                <div style={{ display: "grid", gap: 8 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>Add Review Photo (optional)</label>
+                  <input
+                    ref={reviewImageInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleReviewImageChange}
+                    style={{ display: "none" }}
+                  />
+                  <div className="pdp-review-upload-row">
+                    <button
+                      type="button"
+                      className="pdp-review-upload-btn"
+                      onClick={() => reviewImageInputRef.current?.click()}
+                    >
+                      <i className="fa-regular fa-image"></i>
+                      {reviewForm.image ? "Change Photo" : "Upload Photo"}
+                    </button>
+                    <span className="pdp-review-upload-name">{reviewForm.imageName || "No file selected"}</span>
+                  </div>
+                  {reviewForm.image && (
+                    <img
+                      src={reviewForm.image}
+                      alt="Review preview"
+                      style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 10, border: "1px solid var(--border-light)" }}
+                    />
+                  )}
+                </div>
+                {reviewError && (
+                  <p style={{ color: "var(--danger)", fontSize: 13, margin: 0 }}>{reviewError}</p>
+                )}
+                <div>
+                  <button className="pdp-show-more-btn" type="submit" style={{ margin: 0 }}>
+                    Submit Review
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          {reviews.length > 0 ? (
+            <div className="pdp-review-list pdp-review-list-horizontal">
+              {reviews.map(review => (
+                <div className="pdp-review-card" key={review.id || `${review.name}-${review.date}`}>
+                  <div className="pdp-review-header">
+                    <div className="pdp-review-avatar">{review.avatar || toInitials(review.name)}</div>
+                    <div className="pdp-review-meta">
+                      <div className="pdp-review-name">
+                        {review.name || "Customer"}
+                        {review.verified && <span className="pdp-verified-badge"><i className="fa-solid fa-circle-check"></i> Verified</span>}
+                      </div>
+                      <div className="pdp-review-date">
+                        {review.date ? new Date(review.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : ""}
+                      </div>
+                    </div>
+                    <div className="pdp-review-rating-badge">{Number(review.rating) || 0}<i className="fa-solid fa-star"></i></div>
+                  </div>
+                  {review.title && <h4 className="pdp-review-title">{review.title}</h4>}
+                  <p className="pdp-review-text">{review.text}</p>
+                  {review.image && (
+                    <img
+                      src={review.image}
+                      alt="Customer review"
+                      className="pdp-review-image"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="pdp-review-card">
+              <p className="pdp-review-text" style={{ marginBottom: 0 }}>No reviews yet. Be the first to review this product.</p>
+            </div>
+          )}
+        </div>
+      </section>
 
       <Footer />
       <CartBar />
