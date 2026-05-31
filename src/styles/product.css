@@ -52,10 +52,27 @@
 .pdp-size-section { margin-bottom: 24px; }
 .pdp-section-label { font-size: 14px; color: var(--text-secondary); margin-bottom: 10px; }
 .pdp-section-label strong { color: var(--text-primary); }
-.pdp-sizes { display: flex; gap: 10px; }
+.pdp-sizes { display: flex; gap: 10px; flex-wrap: wrap; }
 .pdp-size-btn { width: 46px; height: 46px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--card-bg); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--duration-normal) var(--ease); color: var(--text-primary); }
 .pdp-size-btn:hover { border-color: var(--accent); color: var(--accent); }
 .pdp-size-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.pdp-size-btn.disabled, .pdp-size-btn:disabled { opacity: 0.35; cursor: not-allowed; text-decoration: line-through; }
+.pdp-size-btn.disabled:hover { border-color: var(--border); color: var(--text-primary); }
+
+/* Colors */
+.pdp-colors { display: flex; gap: 10px; flex-wrap: wrap; }
+.pdp-color-swatch {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+}
+.pdp-color-swatch:hover { outline-color: var(--border); transform: scale(1.15); }
+.pdp-color-swatch.active { outline-color: var(--accent); border-color: #fff; transform: scale(1.18); }
 
 /* Cart Actions */
 .pdp-cart-actions { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }

@@ -6,46 +6,20 @@ import CartBar from "../components/ui/CartBar";
 import ProductCard from "../components/ui/ProductCard";
 import ApiPage from "../api/ApiPage";
 
-/* ── Static review & Q/A data (until backend review system is built) ── */
-const STATIC_REVIEWS = [
-  { id: 1, name: "Rahul Sharma", avatar: "RS", rating: 5, date: "2026-05-10", verified: true, title: "Excellent quality fabric!", text: "Really impressed with the material. Fits perfectly and looks premium. Delivery was fast too. Would definitely recommend to anyone looking for quality clothing.", helpful: 24 },
-  { id: 2, name: "Priya Menon", avatar: "PM", rating: 4, date: "2026-04-28", verified: true, title: "Great value for money", text: "Good quality product at this price range. The color is exactly as shown in the pictures. Stitching quality is top-notch. Only minus is the packaging could be better.", helpful: 18 },
-  { id: 3, name: "Arjun Patel", avatar: "AP", rating: 5, date: "2026-04-15", verified: true, title: "Perfect fit, amazing comfort", text: "Ordered my regular size and it fits like a glove. The fabric is breathable and comfortable for all-day wear. Already ordering another one in a different color!", helpful: 31 },
-  { id: 4, name: "Sneha Reddy", avatar: "SR", rating: 4, date: "2026-03-22", verified: false, title: "Loved the design", text: "Stylish and trendy. Got many compliments wearing this. Material feels durable. Wash quality is good — no color fading after multiple washes.", helpful: 12 },
-  { id: 5, name: "Karthik N", avatar: "KN", rating: 3, date: "2026-03-10", verified: true, title: "Decent but runs slightly large", text: "Product quality is good but sizing runs a bit large. I'd suggest ordering one size smaller. Other than that, the fabric and finish are nice.", helpful: 8 },
-];
+/* ── No static review data — reviews from backend (future) ── */
 
-const STAR_DISTRIBUTION = { 5: 58, 4: 24, 3: 10, 2: 5, 1: 3 };
-const OVERALL_RATING = 4.3;
-const TOTAL_RATINGS = 847;
-const TOTAL_REVIEWS = 312;
-
-const STATIC_QA = [
-  { id: 1, question: "Is this product true to size?", answer: "Yes, this product follows standard Indian sizing. We recommend checking the size chart for the best fit. If you're between sizes, we suggest going one size up for a comfortable fit.", askedBy: "Anil K.", answeredBy: "ATIX OUTFITS", date: "2026-04-20" },
-  { id: 2, question: "What is the fabric material used?", answer: "This product is made from premium quality cotton blend fabric that is breathable, comfortable, and durable. It maintains its shape and color even after multiple washes.", askedBy: "Meena S.", answeredBy: "ATIX OUTFITS", date: "2026-04-15" },
-  { id: 3, question: "Is cash on delivery available?", answer: "Yes, Cash on Delivery (COD) is available for all orders. You can also pay via UPI, bank transfer, or other online payment methods during checkout.", askedBy: "Ravi M.", answeredBy: "ATIX OUTFITS", date: "2026-03-28" },
-  { id: 4, question: "Can I return or exchange if the size doesn't fit?", answer: "Absolutely! We offer easy returns and exchanges within 7 days of delivery. The product should be unused with original tags intact. Please contact our support team to initiate a return.", askedBy: "Deepa J.", answeredBy: "ATIX OUTFITS", date: "2026-03-15" },
-];
-
-const HIGHLIGHTS = [
-  "Premium quality cotton blend fabric",
-  "Comfortable regular fit for everyday wear",
-  "Machine washable — gentle cycle recommended",
-  "Suitable for casual & semi-formal occasions",
-  "Reinforced stitching for long-lasting durability",
-  "Available in multiple sizes",
-];
-
-const SPECIFICATIONS = [
-  { label: "Fabric", value: "Cotton Blend" },
-  { label: "Fit", value: "Regular Fit" },
-  { label: "Sleeve", value: "Full Sleeve" },
-  { label: "Pattern", value: "Solid" },
-  { label: "Neck Type", value: "Round Neck" },
-  { label: "Occasion", value: "Casual, Semi-Formal" },
-  { label: "Wash Care", value: "Machine Wash" },
-  { label: "Country of Origin", value: "India" },
-];
+function normalizeImageList(images) {
+  if (Array.isArray(images)) return images.filter(Boolean);
+  if (typeof images === "string") {
+    try {
+      const parsed = JSON.parse(images);
+      return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
 
 /* ══════════════════════════════════════════════ */
 
@@ -54,13 +28,11 @@ export default function ProductPage({ productId }) {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mainImg, setMainImg] = useState(null);
-  const [size, setSize] = useState("M");
+  const [size, setSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
   const [addedToCart, setAddedToCart] = useState(false);
   const [similarProducts, setSimilarProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
-  const [activeTab, setActiveTab] = useState("reviews");
-  const [expandedQA, setExpandedQA] = useState(null);
-  const [showAllReviews, setShowAllReviews] = useState(false);
   const [zoomStyle, setZoomStyle] = useState({ display: "none" });
   const [pinned, setPinned] = useState(false);
   const imgRef = useRef(null);
@@ -76,6 +48,15 @@ export default function ProductPage({ productId }) {
         const data = await ApiPage.fetchProductById(productId);
         setProduct(data.product);
         if (data.product.image_url) setMainImg(data.product.image_url);
+        // Set default size
+        const sizes = data.product.sizes || [];
+        if (sizes.length > 0) {
+          const firstSize = typeof sizes[0] === 'object' ? sizes[0].size : sizes[0];
+          setSize(firstSize);
+        }
+        // Set default color
+        const colors = data.product.colors || [];
+        if (colors.length > 0) setSelectedColor(colors[0]);
 
         // Fetch similar products
         let similarData = [];
@@ -147,8 +128,8 @@ export default function ProductPage({ productId }) {
     </>
   );
 
-  const imgs = [product.image_url].filter(Boolean);
-  const currentImg = mainImg || imgs[0];
+  const allImages = [product.image_url, ...normalizeImageList(product.images)].filter(Boolean);
+  const currentImg = mainImg || allImages[0];
 
   const handleAddToCart = () => {
     addToCart({
@@ -158,7 +139,10 @@ export default function ProductPage({ productId }) {
       old_price: product.old_price,
       image_url: product.image_url,
       category: product.category,
-      discount: product.discount
+      discount: product.discount,
+      gst_percent: product.gst_percent || 0,
+      size: size || null,
+      color: selectedColor || null,
     });
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
@@ -186,15 +170,6 @@ export default function ProductPage({ productId }) {
   const handleMouseLeave = () => {
     if (!pinned) setZoomStyle({ display: "none" });
   };
-
-  /* ── Review helpers ── */
-  const renderStars = (count) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <i key={i} className={`fa-star ${i < count ? 'fa-solid' : 'fa-regular'}`}></i>
-    ));
-  };
-
-  const visibleReviews = showAllReviews ? STATIC_REVIEWS : STATIC_REVIEWS.slice(0, 3);
 
   /* ── Similar products scroll ── */
   const scrollSimilar = (dir) => {
@@ -225,7 +200,7 @@ export default function ProductPage({ productId }) {
           {/* ── LEFT: Gallery ── */}
           <div className="pdp-gallery">
             <div className="pdp-thumbs">
-              {imgs.map((src, i) => (
+              {allImages.map((src, i) => (
                 <img key={i} src={src} className={`pdp-thumb${currentImg === src ? " active" : ""}`} onClick={() => setMainImg(src)} alt="" />
               ))}
             </div>
@@ -249,12 +224,6 @@ export default function ProductPage({ productId }) {
             <span className="pdp-category-label">{categoryLabel}</span>
             <h1 className="pdp-title">{product.name}</h1>
 
-            {/* Rating summary inline */}
-            <div className="pdp-rating-inline">
-              <span className="pdp-rating-badge">{OVERALL_RATING} <i className="fa-solid fa-star"></i></span>
-              <span className="pdp-rating-count">{TOTAL_RATINGS.toLocaleString()} Ratings & {TOTAL_REVIEWS} Reviews</span>
-            </div>
-
             {/* Offer label */}
             <div className="pdp-special-price-label">Special Price</div>
 
@@ -264,18 +233,61 @@ export default function ProductPage({ productId }) {
               {product.old_price && <span className="pdp-old-price">₹{product.old_price.toLocaleString()}</span>}
               {product.discount > 0 && <span className="pdp-discount-badge">{product.discount}% off</span>}
             </div>
+            {product.gst_percent > 0 && (
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '-8px', marginBottom: '8px' }}>
+                + ₹{Math.round(product.price * product.gst_percent / 100).toLocaleString()} GST ({product.gst_percent}%) • Total: <strong>₹{(product.price + Math.round(product.price * product.gst_percent / 100)).toLocaleString()}</strong>
+              </p>
+            )}
 
             {product.description && (
               <p className="pdp-description">{product.description}</p>
             )}
 
+
+            {/* Colors */}
+            {product.colors && product.colors.length > 0 && (
+              <div className="pdp-size-section">
+                <p className="pdp-section-label">Color: <strong>{selectedColor}</strong></p>
+                <div className="pdp-colors">
+                  {product.colors.map(c => (
+                    <button
+                      key={c}
+                      title={c}
+                      onClick={() => setSelectedColor(c)}
+                      className={`pdp-color-swatch${selectedColor === c ? ' active' : ''}`}
+                      style={{ background: c.startsWith('#') ? c : c.toLowerCase() }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Sizes */}
             <div className="pdp-size-section">
-              <p className="pdp-section-label">Size: <strong>{size}</strong></p>
+              <p className="pdp-section-label">Size: <strong>{size || 'Select'}</strong></p>
               <div className="pdp-sizes">
-                {(product.sizes || ["M","L","XL","XXL"]).map(s => (
-                  <button key={s} className={`pdp-size-btn${size === s ? " active" : ""}`} onClick={() => setSize(s)}>{s}</button>
-                ))}
+                {(() => {
+                  const rawSizes = product.sizes || [];
+                  if (rawSizes.length === 0) return null;
+                  const isObj = typeof rawSizes[0] === 'object';
+                  return rawSizes.map(s => {
+                    const sizeLabel = isObj ? s.size : s;
+                    const sizeStock = isObj ? s.stock : null;
+                    const outOfStock = sizeStock !== null && sizeStock <= 0;
+                    return (
+                      <button
+                        key={sizeLabel}
+                        className={`pdp-size-btn${size === sizeLabel ? ' active' : ''}${outOfStock ? ' disabled' : ''}`}
+                        onClick={() => !outOfStock && setSize(sizeLabel)}
+                        disabled={outOfStock}
+                        title={outOfStock ? 'Out of stock' : sizeLabel}
+                      >
+                        {sizeLabel}
+                        {outOfStock && <span style={{fontSize:'8px',display:'block',lineHeight:'1'}}>OOS</span>}
+                      </button>
+                    );
+                  });
+                })()}
               </div>
             </div>
 
@@ -344,39 +356,6 @@ export default function ProductPage({ productId }) {
         </div>
       </section>
 
-      {/* ══════════ HIGHLIGHTS & SPECS ══════════ */}
-      <section className="pdp-details-section">
-        <div className="pdp-details-grid">
-          {/* Highlights */}
-          <div className="pdp-highlights-card">
-            <h3><i className="fa-solid fa-list-check"></i> Product Highlights</h3>
-            <ul className="pdp-highlights-list">
-              {HIGHLIGHTS.map((item, i) => (
-                <li key={i}>
-                  <i className="fa-solid fa-circle-check"></i>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Specifications */}
-          <div className="pdp-specs-card">
-            <h3><i className="fa-solid fa-table-list"></i> Specifications</h3>
-            <table className="pdp-specs-table">
-              <tbody>
-                {SPECIFICATIONS.map((spec, i) => (
-                  <tr key={i}>
-                    <td className="pdp-spec-label">{spec.label}</td>
-                    <td className="pdp-spec-value">{spec.value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
       {/* ══════════ SIMILAR PRODUCTS ══════════ */}
       {similarProducts.length > 0 && (
         <section className="pdp-similar-section">
@@ -396,108 +375,6 @@ export default function ProductPage({ productId }) {
           </div>
         </section>
       )}
-
-      {/* ══════════ REVIEWS & Q&A TABS ══════════ */}
-      <section className="pdp-reviews-section">
-        <div className="pdp-tabs">
-          <button className={`pdp-tab${activeTab === "reviews" ? " active" : ""}`} onClick={() => setActiveTab("reviews")}>
-            <i className="fa-solid fa-star-half-stroke"></i> Ratings & Reviews
-          </button>
-          <button className={`pdp-tab${activeTab === "qa" ? " active" : ""}`} onClick={() => setActiveTab("qa")}>
-            <i className="fa-solid fa-circle-question"></i> Questions & Answers
-          </button>
-        </div>
-
-        {/* ── Reviews Tab ── */}
-        {activeTab === "reviews" && (
-          <div className="pdp-reviews-content animate-fadeIn">
-            {/* Rating Overview */}
-            <div className="pdp-rating-overview">
-              <div className="pdp-rating-left">
-                <div className="pdp-rating-big">{OVERALL_RATING}</div>
-                <div className="pdp-rating-stars-big">{renderStars(Math.round(OVERALL_RATING))}</div>
-                <div className="pdp-rating-total">{TOTAL_RATINGS.toLocaleString()} Ratings &<br />{TOTAL_REVIEWS} Reviews</div>
-              </div>
-              <div className="pdp-rating-bars">
-                {[5,4,3,2,1].map(star => (
-                  <div className="pdp-bar-row" key={star}>
-                    <span className="pdp-bar-label">{star}<i className="fa-solid fa-star"></i></span>
-                    <div className="pdp-bar-track">
-                      <div
-                        className={`pdp-bar-fill pdp-bar-${star}`}
-                        style={{ width: `${STAR_DISTRIBUTION[star]}%` }}
-                      ></div>
-                    </div>
-                    <span className="pdp-bar-count">{Math.round(TOTAL_RATINGS * STAR_DISTRIBUTION[star] / 100)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Review Cards */}
-            <div className="pdp-review-list">
-              {visibleReviews.map(review => (
-                <div className="pdp-review-card" key={review.id}>
-                  <div className="pdp-review-header">
-                    <div className="pdp-review-avatar">{review.avatar}</div>
-                    <div className="pdp-review-meta">
-                      <div className="pdp-review-name">
-                        {review.name}
-                        {review.verified && <span className="pdp-verified-badge"><i className="fa-solid fa-circle-check"></i> Verified</span>}
-                      </div>
-                      <div className="pdp-review-date">{new Date(review.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                    </div>
-                    <div className="pdp-review-rating-badge">{review.rating}<i className="fa-solid fa-star"></i></div>
-                  </div>
-                  <h4 className="pdp-review-title">{review.title}</h4>
-                  <p className="pdp-review-text">{review.text}</p>
-                  <div className="pdp-review-footer">
-                    <button className="pdp-helpful-btn">
-                      <i className="fa-regular fa-thumbs-up"></i> Helpful ({review.helpful})
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {STATIC_REVIEWS.length > 3 && (
-              <button className="pdp-show-more-btn" onClick={() => setShowAllReviews(!showAllReviews)}>
-                {showAllReviews ? "Show Less Reviews" : `View All ${STATIC_REVIEWS.length} Reviews`}
-                <i className={`fa-solid fa-chevron-${showAllReviews ? "up" : "down"}`}></i>
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* ── Q&A Tab ── */}
-        {activeTab === "qa" && (
-          <div className="pdp-qa-content animate-fadeIn">
-            <div className="pdp-qa-list">
-              {STATIC_QA.map(qa => (
-                <div className={`pdp-qa-item${expandedQA === qa.id ? " expanded" : ""}`} key={qa.id}>
-                  <button className="pdp-qa-question" onClick={() => setExpandedQA(expandedQA === qa.id ? null : qa.id)}>
-                    <div className="pdp-qa-q-icon">Q</div>
-                    <span>{qa.question}</span>
-                    <i className={`fa-solid fa-chevron-${expandedQA === qa.id ? "up" : "down"} pdp-qa-arrow`}></i>
-                  </button>
-                  <div className="pdp-qa-answer-wrap">
-                    <div className="pdp-qa-answer">
-                      <div className="pdp-qa-a-icon">A</div>
-                      <div>
-                        <p>{qa.answer}</p>
-                        <div className="pdp-qa-meta">
-                          <span>Answered by <strong>{qa.answeredBy}</strong></span>
-                          <span>{new Date(qa.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </section>
 
       <Footer />
       <CartBar />

@@ -1,10 +1,10 @@
 import { useCart } from "../context/CartContext";
 
 export default function CartPage() {
-  const { cart, updateQuantity, removeFromCart, cartTotal, cartCount } = useCart();
+  const { cart, updateQuantity, removeFromCart, cartTotal, cartGst, cartTotalWithGst, cartCount } = useCart();
 
-  const shipping = cartTotal > 999 ? 0 : 79;
-  const grandTotal = cartTotal + shipping;
+  const shipping = cartTotalWithGst > 999 ? 0 : 79;
+  const grandTotal = cartTotalWithGst + shipping;
 
   if (cart.length === 0) {
     return (
@@ -120,6 +120,12 @@ export default function CartPage() {
                 <span>Subtotal ({cartCount} items)</span>
                 <span className="summary-value">₹{cartTotal.toLocaleString()}</span>
               </div>
+              {cartGst > 0 && (
+                <div className="summary-row">
+                  <span>GST</span>
+                  <span className="summary-value">+ ₹{cartGst.toLocaleString()}</span>
+                </div>
+              )}
               <div className="summary-row">
                 <span>Shipping</span>
                 <span className={`summary-value ${shipping === 0 ? "summary-free" : ""}`}>
@@ -131,7 +137,7 @@ export default function CartPage() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                   </svg>
-                  Add ₹{(1000 - cartTotal).toLocaleString()} more for free shipping
+                  Add ₹{(1000 - cartTotalWithGst).toLocaleString()} more for free shipping
                 </div>
               )}
               <div className="summary-divider"></div>

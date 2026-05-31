@@ -3,7 +3,7 @@ import { useCart } from "../context/CartContext";
 import ApiPage from "../api/ApiPage";
 
 export default function PaymentPage() {
-  const { cart, cartTotal, cartCount, address, clearCart } = useCart();
+  const { cart, cartTotal, cartGst, cartTotalWithGst, cartCount, address, clearCart } = useCart();
   const [payMethod, setPayMethod] = useState("");
   const [proofImage, setProofImage] = useState(null);
   const [paymentSettings, setPaymentSettings] = useState(null);
@@ -64,8 +64,8 @@ export default function PaymentPage() {
     }
   }, [paymentSettings, payMethod]);
 
-  const shipping = cartTotal > 999 ? 0 : 79;
-  const grandTotal = cartTotal + shipping;
+  const shipping = cartTotalWithGst > 999 ? 0 : 79;
+  const grandTotal = cartTotalWithGst + shipping;
 
   if (cart.length === 0) {
     window.location.hash = "#cart";
@@ -115,7 +115,7 @@ export default function PaymentPage() {
           formData.append("paymentProof", base64String);
         }
 
-        formData.append("items", JSON.stringify(cart.map(item => ({ id: item.id, quantity: item.quantity || 1 }))));
+        formData.append("items", JSON.stringify(cart.map(item => ({ id: item.id, quantity: item.quantity || 1, size: item.size || null, color: item.color || null }))));
         if (user?.email) formData.append("email", user.email);
 
         result = await ApiPage.placeOrderFormData(formData);
@@ -129,7 +129,7 @@ export default function PaymentPage() {
           district: address.district,
           pincode: address.pincode,
           paymentMethod: payMethod,
-          items: cart.map(item => ({ id: item.id, quantity: item.quantity || 1 })),
+          items: cart.map(item => ({ id: item.id, quantity: item.quantity || 1, size: item.size || null, color: item.color || null })),
         };
         result = await ApiPage.placeOrder(orderData);
       }
@@ -363,6 +363,12 @@ export default function PaymentPage() {
                 <span>Subtotal ({cartCount} items)</span>
                 <span>₹{cartTotal.toLocaleString()}</span>
               </div>
+              {cartGst > 0 && (
+                <div className="summary-row" style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+                  <span>GST</span>
+                  <span>+ ₹{cartGst.toLocaleString()}</span>
+                </div>
+              )}
               <div className="summary-row">
                 <span>Shipping</span>
                 <span className={shipping === 0 ? "summary-free" : ""}>{shipping === 0 ? "FREE" : `₹${shipping}`}</span>

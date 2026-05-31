@@ -10,6 +10,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [cancelModalState, setCancelModalState] = useState({ isOpen: false, orderId: null });
 
   const token = localStorage.getItem("customer_token");
 
@@ -32,15 +33,24 @@ export default function OrdersPage() {
     loadOrders();
   }, []);
 
-  const cancelOrder = async (orderId) => {
-    if (window.confirm("Are you sure you want to cancel this order?")) {
-      try {
-        await ApiPage.cancelOrder(orderId);
-        loadOrders();
-      } catch (err) {
-        alert(err.message);
-      }
+  const initiateCancel = (orderId) => {
+    setCancelModalState({ isOpen: true, orderId });
+  };
+
+  const confirmCancel = async () => {
+    if (!cancelModalState.orderId) return;
+    try {
+      await ApiPage.cancelOrder(cancelModalState.orderId);
+      loadOrders();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setCancelModalState({ isOpen: false, orderId: null });
     }
+  };
+
+  const closeCancelModal = () => {
+    setCancelModalState({ isOpen: false, orderId: null });
   };
 
   const formatDate = (dateStr) => {
@@ -257,7 +267,7 @@ export default function OrdersPage() {
 
                         <div className="order-actions-row">
                           {!isCancelled && order.status !== "Delivered" && order.status !== "Shipped" && (
-                            <button className="order-cancel-btn" onClick={() => cancelOrder(order.order_id)}>
+                            <button className="order-cancel-btn" onClick={() => initiateCancel(order.order_id)}>
                               <i className="fa-solid fa-ban"></i> Cancel Order
                             </button>
                           )}
@@ -274,6 +284,22 @@ export default function OrdersPage() {
           )}
         </div>
       </div>
+
+      {cancelModalState.isOpen && (
+        <div className="cancel-modal-overlay" onClick={closeCancelModal}>
+          <div className="cancel-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="cancel-modal-icon">
+              <i className="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h2>Cancel Order?</h2>
+            <p>Are you sure you want to cancel this order? This action cannot be undone.</p>
+            <div className="cancel-modal-actions">
+              <button className="cancel-modal-btn-keep" onClick={closeCancelModal}>No, Keep Order</button>
+              <button className="cancel-modal-btn-confirm" onClick={confirmCancel}>Yes, Cancel It</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </>

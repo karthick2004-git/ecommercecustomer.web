@@ -14,12 +14,12 @@ const INDIAN_STATES = [
 ];
 
 export default function CheckoutPage() {
-  const { cart, cartTotal, cartCount, address, setAddress } = useCart();
+  const { cart, cartTotal, cartGst, cartTotalWithGst, cartCount, address, setAddress } = useCart();
   const [errors, setErrors] = useState({});
   const [showForm, setShowForm] = useState(true);
 
-  const shipping = cartTotal > 999 ? 0 : 79;
-  const grandTotal = cartTotal + shipping;
+  const shipping = cartTotalWithGst > 999 ? 0 : 79;
+  const grandTotal = cartTotalWithGst + shipping;
 
   const hasSavedAddress = !!(address.name && address.phone && address.address && address.pincode);
 
@@ -360,6 +360,12 @@ export default function CheckoutPage() {
                 <span>Subtotal ({cartCount} items)</span>
                 <span>₹{cartTotal.toLocaleString()}</span>
               </div>
+              {cartGst > 0 && (
+                <div className="summary-row" style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+                  <span>GST</span>
+                  <span>+ ₹{cartGst.toLocaleString()}</span>
+                </div>
+              )}
               <div className="summary-row">
                 <span>Shipping</span>
                 <span className={shipping === 0 ? "summary-free" : ""}>{shipping === 0 ? "FREE" : `₹${shipping}`}</span>

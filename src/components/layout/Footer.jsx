@@ -1,6 +1,13 @@
 export default function Footer() {
+  const handleFooterClick = (e) => {
+    const link = e.target.closest('a[href^="#"]');
+    if (link && link.getAttribute('href') !== '#') {
+      setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+    }
+  };
+
   return (
-    <footer className="footer">
+    <footer className="footer" onClick={handleFooterClick}>
       <div className="container footer-grid">
         <div className="footer-brand">
           <h3 className="footer-logo">ATIX OUTFITS</h3>
