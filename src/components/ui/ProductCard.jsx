@@ -36,6 +36,19 @@ export default function ProductCard({ product, wishlist, toggleWishlist }) {
         {product.stock !== undefined && product.stock <= 5 && product.stock > 0 && (
           <span className="stock-badge">Only {product.stock} left!</span>
         )}
+
+        {product.colors && product.colors.length > 0 && (
+          <div className="product-card-colors">
+            {product.colors.slice(0, 5).map(c => (
+              <span
+                key={c}
+                title={c}
+                className="product-color-dot"
+                style={{ background: c.startsWith('#') ? c : c.toLowerCase() }}
+              />
+            ))}
+          </div>
+        )}
         
         <div className="price-box">
           <div className="price-group">

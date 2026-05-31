@@ -29,17 +29,8 @@ export default function AuthPage({ initialView = "login" }) {
       localStorage.setItem("customer_token", data.token);
       localStorage.setItem("customer_user", JSON.stringify(data.customer));
       
-      // Smart redirect: if cart has items, proceed to checkout (#address), otherwise go home
-      try {
-        const cartStored = JSON.parse(localStorage.getItem("cart") || "[]");
-        if (Array.isArray(cartStored) && cartStored.length > 0) {
-          window.location.hash = "#address";
-        } else {
-          window.location.hash = "#home";
-        }
-      } catch (err) {
-        window.location.hash = "#home";
-      }
+      // Redirect to home page after login
+      window.location.hash = "#home";
       window.location.reload();
     } catch (err) {
       if (err.message.includes("verify")) {

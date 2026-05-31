@@ -3,8 +3,8 @@ import { useCart } from "../context/CartContext";
 import ApiPage from "../api/ApiPage";
 
 export default function PaymentPage() {
-  const { cart, cartTotal, cartCount, address, clearCart } = useCart();
-  const [payMethod, setPayMethod] = useState("cod");
+  const { cart, cartTotal, cartGst, cartTotalWithGst, cartCount, address, clearCart } = useCart();
+  const [payMethod, setPayMethod] = useState("");
   const [proofImage, setProofImage] = useState(null);
   const [paymentSettings, setPaymentSettings] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -54,8 +54,18 @@ export default function PaymentPage() {
     loadSettings();
   }, []);
 
-  const shipping = cartTotal > 999 ? 0 : 79;
-  const grandTotal = cartTotal + shipping;
+  useEffect(() => {
+    if (paymentSettings && !payMethod) {
+      if (paymentSettings.cod?.enabled) {
+        setPayMethod("cod");
+      } else if (paymentSettings.upi || paymentSettings.qr) {
+        setPayMethod("qr");
+      }
+    }
+  }, [paymentSettings, payMethod]);
+
+  const shipping = cartTotalWithGst > 999 ? 0 : 79;
+  const grandTotal = cartTotalWithGst + shipping;
 
   if (cart.length === 0) {
     window.location.hash = "#cart";
@@ -105,7 +115,7 @@ export default function PaymentPage() {
           formData.append("paymentProof", base64String);
         }
 
-        formData.append("items", JSON.stringify(cart.map(item => ({ id: item.id, quantity: item.quantity || 1 }))));
+        formData.append("items", JSON.stringify(cart.map(item => ({ id: item.id, quantity: item.quantity || 1, size: item.size || null, color: item.color || null }))));
         if (user?.email) formData.append("email", user.email);
 
         result = await ApiPage.placeOrderFormData(formData);
@@ -119,7 +129,7 @@ export default function PaymentPage() {
           district: address.district,
           pincode: address.pincode,
           paymentMethod: payMethod,
-          items: cart.map(item => ({ id: item.id, quantity: item.quantity || 1 })),
+          items: cart.map(item => ({ id: item.id, quantity: item.quantity || 1, size: item.size || null, color: item.color || null })),
         };
         result = await ApiPage.placeOrder(orderData);
       }
@@ -180,39 +190,51 @@ export default function PaymentPage() {
               <h2>Payment Method</h2>
               <p className="payment-subtitle">Choose how you'd like to pay</p>
 
-              <div className="payment-options">
-                <label className={`payment-option ${payMethod === "cod" ? "selected" : ""}`}>
-                  <input type="radio" name="paymethod" value="cod" checked={payMethod === "cod"} onChange={() => setPayMethod("cod")} />
-                  <div className="payment-option-content">
-                    <div className="payment-option-icon">📦</div>
-                    <div className="payment-option-info">
-                      <span className="payment-option-title">Cash on Delivery</span>
-                      <span className="payment-option-desc">Pay when you receive your order</span>
-                    </div>
-                    <div className="payment-radio"></div>
-                  </div>
-                </label>
+              {!paymentSettings ? (
+                <div className="payment-loading" style={{ margin: '20px 0' }}>
+                  <span className="spinner"></span>
+                  <p>Loading payment methods...</p>
+                </div>
+              ) : (
+                <div className="payment-options">
+                  {paymentSettings?.cod?.enabled && (
+                    <label className={`payment-option ${payMethod === "cod" ? "selected" : ""}`}>
+                      <input type="radio" name="paymethod" value="cod" checked={payMethod === "cod"} onChange={() => setPayMethod("cod")} />
+                      <div className="payment-option-content">
+                        <div className="payment-option-icon">📦</div>
+                        <div className="payment-option-info">
+                          <span className="payment-option-title">Cash on Delivery</span>
+                          <span className="payment-option-desc">Pay when you receive your order</span>
+                        </div>
+                        <div className="payment-radio"></div>
+                      </div>
+                    </label>
+                  )}
 
-                <label className={`payment-option ${payMethod === "qr" ? "selected" : ""}`}>
-                  <input type="radio" name="paymethod" value="qr" checked={payMethod === "qr"} onChange={() => setPayMethod("qr")} />
-                  <div className="payment-option-content">
-                    <div className="payment-option-icon">📷</div>
-                    <div className="payment-option-info">
-                      <span className="payment-option-title">QR Code Payment</span>
-                      <span className="payment-option-desc">Scan QR and pay with any UPI app</span>
+                  {(paymentSettings?.qr || paymentSettings?.upi) && (
+                    <label className={`payment-option ${payMethod === "qr" ? "selected" : ""}`}>
+                      <input type="radio" name="paymethod" value="qr" checked={payMethod === "qr"} onChange={() => setPayMethod("qr")} />
+                      <div className="payment-option-content">
+                        <div className="payment-option-icon">📷</div>
+                        <div className="payment-option-info">
+                          <span className="payment-option-title">UPI / QR Code</span>
+                          <span className="payment-option-desc">Scan QR or pay directly with any UPI app</span>
+                        </div>
+                        <div className="payment-radio"></div>
+                      </div>
+                    </label>
+                  )}
+                  
+                  {!paymentSettings?.cod?.enabled && !paymentSettings?.qr && !paymentSettings?.upi && (
+                    <div className="payment-error-box">
+                      <p>No payment methods are currently available. Please contact support.</p>
                     </div>
-                    <div className="payment-radio"></div>
-                  </div>
-                </label>
-              </div>
+                  )}
+                </div>
+              )}
 
-              {payMethod === "qr" && (
-                !paymentSettings ? (
-                  <div className="payment-loading">
-                    <span className="spinner"></span>
-                    <p>Loading QR payment details...</p>
-                  </div>
-                ) : (!paymentSettings.upi && !paymentSettings.qr) ? (
+              {payMethod === "qr" && paymentSettings && (
+                (!paymentSettings.upi && !paymentSettings.qr) ? (
                   <div className="payment-error-box">
                     <p>QR payment is currently unavailable. Please use another method.</p>
                   </div>
@@ -341,6 +363,12 @@ export default function PaymentPage() {
                 <span>Subtotal ({cartCount} items)</span>
                 <span>₹{cartTotal.toLocaleString()}</span>
               </div>
+              {cartGst > 0 && (
+                <div className="summary-row" style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+                  <span>GST</span>
+                  <span>+ ₹{cartGst.toLocaleString()}</span>
+                </div>
+              )}
               <div className="summary-row">
                 <span>Shipping</span>
                 <span className={shipping === 0 ? "summary-free" : ""}>{shipping === 0 ? "FREE" : `₹${shipping}`}</span>

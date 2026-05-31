@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import LoadingSpinner from "../ui/LoadingSpinner";
+import ApiClientPublic from "../../api/ApiClientPublic";
+import ApiEndUrl from "../../api/ApiEndUrl";
 
 export default function ContactSection() {
   const [form, setForm] = useState({ name: "", phone: "", city: "", pincode: "", type: "Support", message: "" });
@@ -17,13 +19,10 @@ export default function ContactSection() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/api/customer/support', {
+      const response = await ApiClientPublic(ApiEndUrl.customer.support, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       });
-      
-      if (!response.ok) throw new Error('Failed to send message');
       
       setSuccess(true);
       setForm({ name: "", phone: "", city: "", pincode: "", type: "Support", message: "" });

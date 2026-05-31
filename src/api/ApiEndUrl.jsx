@@ -21,6 +21,7 @@ const ApiEndUrl = {
     order: `${BASE_URL}/customer/order`,
     orders: `${BASE_URL}/customer/orders`,
     paymentSettings: `${BASE_URL}/customer/payment-settings`,
+    support: `${BASE_URL}/customer/support`,
   }
 };
 

@@ -457,6 +457,29 @@
   color: var(--success);
 }
 
+/* Color Swatches on Card */
+.product-card-colors {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.product-color-dot {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.8);
+  box-shadow: 0 0 0 1.5px rgba(0,0,0,0.18);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.product-color-dot:hover {
+  transform: scale(1.25);
+}
+
 /* ===== SKELETON CARDS ===== */
 .skeleton-card {
   background: var(--card-bg);

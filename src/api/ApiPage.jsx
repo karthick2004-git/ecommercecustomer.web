@@ -63,7 +63,7 @@ const ApiPage = {
   },
 
   cancelOrder: async (orderId) => {
-    return await ApiClientPrivate(ApiEndUrl.customer.order, {
+    return await ApiClientPrivate(ApiEndUrl.customer.orders, {
       method: 'PUT',
       body: JSON.stringify({ order_id: orderId }),
     });
