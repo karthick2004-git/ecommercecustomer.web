@@ -3,7 +3,7 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background: #fff;
+  background: var(--bg);
   overflow: hidden;
 }
 
@@ -59,7 +59,7 @@
   align-items: center;
   justify-content: center;
   padding: 40px;
-  background: #fff;
+  background: var(--bg);
 }
 
 .auth-container {
@@ -83,11 +83,11 @@
   font-weight: 700;
   text-transform: uppercase;
   margin-bottom: 10px;
-  color: #111;
+  color: var(--primary);
 }
 
 .auth-header p {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 15px;
 }
 
@@ -108,24 +108,25 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #111;
+  color: var(--text-primary);
 }
 
 .input-group input {
   padding: 16px 20px;
   border-radius: 12px;
-  border: 1px solid #e5e5e5;
-  background: #fcfcfc;
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
   font-size: 15px;
   font-family: inherit;
+  color: var(--text-primary);
   transition: all 0.3s ease;
 }
 
 .input-group input:focus {
   outline: none;
-  border-color: #111;
-  background: #fff;
-  box-shadow: 0 0 0 4px rgba(0,0,0,0.05);
+  border-color: var(--accent);
+  background: var(--bg);
+  box-shadow: 0 0 0 4px var(--accent-light);
 }
 
 .password-input-wrapper {
@@ -143,7 +144,7 @@
   position: absolute;
   right: 15px;
   cursor: pointer;
-  color: #888;
+  color: var(--text-muted);
   font-size: 16px;
   transition: color 0.3s ease;
   user-select: none;
@@ -151,7 +152,7 @@
 }
 
 .password-toggle:hover {
-  color: #111;
+  color: var(--text-primary);
 }
 
 .auth-submit-btn {
@@ -159,7 +160,7 @@
   padding: 18px;
   border-radius: 12px;
   border: none;
-  background: #111;
+  background: var(--accent);
   color: #fff;
   font-weight: 700;
   font-size: 15px;
@@ -170,9 +171,9 @@
 }
 
 .auth-submit-btn:hover {
-  background: #c59b6d;
+  background: var(--accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(197, 155, 109, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .auth-submit-btn:disabled {
@@ -184,11 +185,11 @@
   margin-top: 30px;
   text-align: center;
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .auth-footer span {
-  color: #111;
+  color: var(--accent);
   font-weight: 700;
   cursor: pointer;
   margin-left: 5px;
